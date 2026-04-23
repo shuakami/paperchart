@@ -1,0 +1,52 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/noto-sans-sc/chinese-simplified-400.css";
+@import "@fontsource/noto-sans-sc/chinese-simplified-500.css";
+@import "@fontsource/noto-sans-sc/chinese-simplified-600.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  background: #f6f1ea;
+  color: #2b2a27;
+  font-family: Inter, "Noto Sans SC", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-feature-settings: "ss01", "cv11";
+}
+
+svg {
+  background: transparent;
+}
+
+svg text {
+  font-family: Inter, "Noto Sans SC", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.chart-card {
+  display: inline-block;
+  background: #f6f1ea;
+}
+
+.chart-card > svg {
+  display: block;
+}
+
+.tab-nums {
+  font-variant-numeric: tabular-nums;
+}
