@@ -201,7 +201,6 @@ export default function TableChart({
   const INK = s.ink ?? th.ink;
   const MUTED = s.muted ?? th.muted;
   const RULE = s.rule ?? th.rule;
-  const ACCENT = s.accent ?? th.accent;
   const BG = s.bg ?? th.bg;
   const PANEL = th.panel ?? BG;
 
@@ -312,25 +311,15 @@ export default function TableChart({
       viewBox={`0 0 ${W} ${H}`}
       style={{ display: "block", background: BG }}
     >
-      {/* highlighted column panel — full height */}
+      {/* highlighted column panel — full height, no rail, just tinted fill */}
       {hlStart >= 0 && (
-        <g>
-          <rect
-            x={plotLeft + labelW + hlStart * colW}
-            y={TOP + GROUP_H}
-            width={(hlEnd - hlStart + 1) * colW}
-            height={HEADER_H + totalRowH}
-            fill={PANEL}
-          />
-          {/* left accent rail */}
-          <rect
-            x={plotLeft + labelW + hlStart * colW}
-            y={TOP + GROUP_H}
-            width={3}
-            height={HEADER_H + totalRowH}
-            fill={ACCENT}
-          />
-        </g>
+        <rect
+          x={plotLeft + labelW + hlStart * colW}
+          y={TOP + GROUP_H}
+          width={(hlEnd - hlStart + 1) * colW}
+          height={HEADER_H + totalRowH}
+          fill={PANEL}
+        />
       )}
 
       {/* group band */}

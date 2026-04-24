@@ -37,6 +37,13 @@ const TYPES = [
   "grouped-bar",
   "slope",
   "small-multiples",
+  "timeline",
+  "funnel",
+  "sankey",
+  "treemap",
+  "radar",
+  "box-plot",
+  "calendar-heatmap",
 ];
 
 const THEMES = ["paper", "ink", "slate", "forest", "mono", "dusk"];

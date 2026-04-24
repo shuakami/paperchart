@@ -12,7 +12,7 @@ Or install as an open agent skill so Claude Code, Cursor, Codex and Gemini can p
 npx skills add shuakami/paperchart
 ```
 
-Six chart primitives, a single warm palette, a headless-Chromium pipeline that renders every figure at 2&times;-DPR. Designed to be driven by AI agents &mdash; feed it a structured JSON file, get a figure you can ship.
+Twenty-seven chart primitives, six themes, a headless-Chromium pipeline that renders every figure at 2&times;-DPR. Designed to be driven by AI agents &mdash; feed it a structured JSON file, get a figure you can ship.
 
 ---
 
@@ -36,12 +36,33 @@ The CLI starts a tiny local HTTP server, renders the React view inside headless 
 
 | slug | what it is | good for |
 | --- | --- | --- |
+| `table` | column-major comparison table | model / product / tier release posts |
 | `latency` | grouped horizontal bars, log-scaled x axis | before / after distributions, percentile comparisons |
 | `bytes` | stacked horizontal bars with an explicit gap | splitting a payload into a first-load block and a deferred block |
-| `pack-layout` | byte-level composition + bit header | explaining a binary format on a single page |
-| `delivery` | three-up panel comparison | architecture options where only one variant is emphasised |
-| `recall` | per-row dot plot with overlapping markers | showing that two or more engines return the same result set |
+| `stacked-bar` | per-row segment stack | composition of a measure across categories |
+| `grouped-bar` | side-by-side bars per group | two to four series compared across groups |
+| `ranking` | sorted leaderboard with one accented row | eval rankings, top-N lists |
+| `dumbbell` | paired before / after endpoints per row | bi-temporal comparison at a fixed moment |
+| `slope` | two-point lines per series | simple before / after trend |
+| `line` | multi-series time series | classical line chart |
+| `area` | stacked area | composition over time |
+| `small-multiples` | N panels sharing axes | per-segment sparkline grid |
+| `timeline` | swim-lane phases on a time axis | roadmaps, release histories |
+| `funnel` | stage bars with drop-off annotations | acquisition / activation funnels |
+| `sankey` | two-column flow diagram | attribution, token allocation |
+| `treemap` | squarified hierarchical tiles | bundle / budget composition |
+| `radar` | multi-axis polygon | capability profile, coverage map |
+| `scatter` | points + optional regression | correlation plots |
+| `heatmap` | row &times; column matrix | confusion matrices, cross-tabs |
+| `calendar-heatmap` | 53&times;7 daily grid | daily activity over a year |
+| `histogram` | frequency bins | distribution shape |
+| `box-plot` | five-number-summary rows | distribution comparison |
+| `cdf` | cumulative distribution | tail-sensitive comparisons |
+| `waterfall` | signed-delta steps | build-ups and break-downs |
 | `critical-path` | horizontal timeline with named milestones | network waterfalls, deferred vs blocking resources |
+| `pack-layout` | byte-level composition + bit header | explaining a binary format on a single page |
+| `recall` | per-row dot plot with overlapping markers | showing that two or more engines return the same result set |
+| `delivery` | three-up panel comparison | architecture options where only one variant is emphasised |
 
 Hit each live at [shuakami.github.io/paperchart](https://shuakami.github.io/paperchart/).
 

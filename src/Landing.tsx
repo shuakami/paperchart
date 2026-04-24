@@ -20,6 +20,13 @@ import StackedBarChart from "./charts/StackedBarChart";
 import GroupedBarChart from "./charts/GroupedBarChart";
 import SlopeChart from "./charts/SlopeChart";
 import SmallMultiplesChart from "./charts/SmallMultiplesChart";
+import TimelineChart from "./charts/TimelineChart";
+import FunnelChart from "./charts/FunnelChart";
+import SankeyChart from "./charts/SankeyChart";
+import TreemapChart from "./charts/TreemapChart";
+import RadarChart from "./charts/RadarChart";
+import BoxPlotChart from "./charts/BoxPlotChart";
+import CalendarHeatmapChart from "./charts/CalendarHeatmapChart";
 
 const THEME_ORDER = ["paper", "ink", "slate", "forest", "mono", "dusk"] as const;
 type ThemeName = (typeof THEME_ORDER)[number];
@@ -37,16 +44,23 @@ const PRIMITIVES: PrimitiveDef[] = [
   { slug: "bytes", name: "bytes", tag: "Stacked bars for critical and deferred", render: (t) => <BytesChart theme={t} /> },
   { slug: "stacked-bar", name: "stacked bar", tag: "Composition by category", render: (t) => <StackedBarChart theme={t} /> },
   { slug: "grouped-bar", name: "grouped bar", tag: "Side-by-side categorical comparison", render: (t) => <GroupedBarChart theme={t} /> },
+  { slug: "funnel", name: "funnel", tag: "Conversion across stages with drop-off", render: (t) => <FunnelChart theme={t} /> },
   { slug: "ranking", name: "ranking", tag: "Sorted leaderboard, one row accented", render: (t) => <RankingChart theme={t} /> },
   { slug: "dumbbell", name: "dumbbell", tag: "Paired before and after per row", render: (t) => <DumbbellChart theme={t} /> },
   { slug: "slope", name: "slope", tag: "Two-point trend with percentage change", render: (t) => <SlopeChart theme={t} /> },
   { slug: "line", name: "line", tag: "Multi-series line over time", render: (t) => <LineChart theme={t} /> },
   { slug: "area", name: "area", tag: "Stacked area composition over time", render: (t) => <AreaChart theme={t} /> },
   { slug: "small-multiples", name: "small multiples", tag: "One shape, repeated across subjects", render: (t) => <SmallMultiplesChart theme={t} /> },
+  { slug: "timeline", name: "timeline", tag: "Phases across a time axis with milestones", render: (t) => <TimelineChart theme={t} /> },
   { slug: "scatter", name: "scatter", tag: "Correlation with optional regression", render: (t) => <ScatterChart theme={t} /> },
   { slug: "heatmap", name: "heatmap", tag: "Matrix on a two-color scale", render: (t) => <HeatmapChart theme={t} /> },
+  { slug: "calendar-heatmap", name: "calendar heatmap", tag: "Daily activity across a year", render: (t) => <CalendarHeatmapChart theme={t} /> },
   { slug: "histogram", name: "histogram", tag: "Binned frequency distribution", render: (t) => <HistogramChart theme={t} /> },
+  { slug: "box-plot", name: "box plot", tag: "Distribution summary with whiskers and outliers", render: (t) => <BoxPlotChart theme={t} /> },
   { slug: "cdf", name: "cdf", tag: "Empirical cumulative distribution", render: (t) => <CdfChart theme={t} /> },
+  { slug: "radar", name: "radar", tag: "Multi-axis capability comparison", render: (t) => <RadarChart theme={t} /> },
+  { slug: "treemap", name: "treemap", tag: "Hierarchical proportions by area", render: (t) => <TreemapChart theme={t} /> },
+  { slug: "sankey", name: "sankey", tag: "Flow between source and target buckets", render: (t) => <SankeyChart theme={t} /> },
   { slug: "waterfall", name: "waterfall", tag: "Additive and subtractive steps", render: (t) => <WaterfallChart theme={t} /> },
   { slug: "critical-path", name: "critical path", tag: "Network timeline with milestones", render: (t) => <CriticalPathChart theme={t} /> },
   { slug: "recall", name: "recall", tag: "Per-row dot plot for set equality", render: (t) => <RecallChart theme={t} /> },
@@ -121,43 +135,37 @@ function TopBar({
         >
           paperchart
         </a>
-        <div
-          className="flex items-center gap-1.5"
-          role="group"
-          aria-label="theme"
-        >
-          {THEME_ORDER.map((n) => {
-            const t = resolveTheme(n);
-            const active = themeName === n;
-            return (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setThemeName(n)}
-                title={n}
-                aria-pressed={active}
-                style={{
-                  width: 22,
-                  height: 22,
-                  padding: 0,
-                  background: t.bg,
-                  border: `1px solid ${active ? ink : rule}`,
-                  cursor: "pointer",
-                  position: "relative",
-                  transition: "border-color 160ms ease",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    inset: 4,
-                    background: t.accent,
-                  }}
-                />
-              </button>
-            );
-          })}
-        </div>
+        <label className="flex items-center gap-2 text-[13px]" style={{ color: theme.muted }}>
+          <span>theme</span>
+          <select
+            value={themeName}
+            onChange={(e) => setThemeName(e.target.value as ThemeName)}
+            aria-label="theme"
+            style={{
+              background: bg,
+              color: ink,
+              border: `1px solid ${rule}`,
+              padding: "4px 26px 4px 10px",
+              fontSize: 13,
+              fontFamily: "inherit",
+              lineHeight: 1.4,
+              cursor: "pointer",
+              appearance: "none",
+              WebkitAppearance: "none",
+              MozAppearance: "none",
+              backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='${encodeURIComponent(ink)}' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>")`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 8px center",
+              backgroundSize: "10px 10px",
+            }}
+          >
+            {THEME_ORDER.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
     </div>
   );
@@ -443,6 +451,14 @@ function computeAspect(slug: string): number {
       return 1600 / 780;
     case "heatmap":
       return 1600 / 900;
+    case "timeline":
+      return 1600 / 540;
+    case "funnel":
+      return 1600 / 620;
+    case "box-plot":
+      return 1600 / 520;
+    case "calendar-heatmap":
+      return 1600 / 380;
     default:
       return 1600 / 900;
   }

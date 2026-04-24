@@ -19,6 +19,13 @@ import StackedBarChart from "./charts/StackedBarChart";
 import GroupedBarChart from "./charts/GroupedBarChart";
 import SlopeChart from "./charts/SlopeChart";
 import SmallMultiplesChart from "./charts/SmallMultiplesChart";
+import TimelineChart from "./charts/TimelineChart";
+import FunnelChart from "./charts/FunnelChart";
+import SankeyChart from "./charts/SankeyChart";
+import TreemapChart from "./charts/TreemapChart";
+import RadarChart from "./charts/RadarChart";
+import BoxPlotChart from "./charts/BoxPlotChart";
+import CalendarHeatmapChart from "./charts/CalendarHeatmapChart";
 import Landing from "./Landing";
 import { resolveTheme, type Theme } from "./theme";
 
@@ -45,6 +52,13 @@ const routes: Record<string, Comp> = {
   "grouped-bar": GroupedBarChart,
   slope: SlopeChart,
   "small-multiples": SmallMultiplesChart,
+  timeline: TimelineChart,
+  funnel: FunnelChart,
+  sankey: SankeyChart,
+  treemap: TreemapChart,
+  radar: RadarChart,
+  "box-plot": BoxPlotChart,
+  "calendar-heatmap": CalendarHeatmapChart,
 };
 
 function readQuery(): {

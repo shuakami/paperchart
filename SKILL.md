@@ -1,6 +1,6 @@
 ---
 name: paperchart
-description: Generate clean, calm chart PNGs in the spirit of Anthropic and OpenAI blog posts. Trigger when the user asks to produce a chart, model comparison table, diagram or infographic for a technical blog post, release notes, a research write-up or a slide deck and wants a single restrained palette, minimal chrome, heavy inline labelling, and PNG output rendered from React at native resolution. The primary surface is a shell CLI named `paperchart` that takes a JSON file and writes a PNG. Twenty primitives, six themes, layout + style overrides per chart.
+description: Generate clean, calm chart PNGs in the spirit of Anthropic and OpenAI blog posts. Trigger when the user asks to produce a chart, model comparison table, diagram or infographic for a technical blog post, release notes, a research write-up or a slide deck and wants a single restrained palette, minimal chrome, heavy inline labelling, and PNG output rendered from React at native resolution. The primary surface is a shell CLI named `paperchart` that takes a JSON file and writes a PNG. Twenty-seven primitives (line, area, scatter, heatmap, calendar heatmap, histogram, cdf, box-plot, ranking, dumbbell, slope, waterfall, line, area, small-multiples, timeline, funnel, sankey, treemap, radar, table, stacked-bar, grouped-bar, critical-path, pack-layout, latency, bytes, recall, delivery), six themes, layout + style overrides per chart.
 license: MIT
 metadata:
   author: shuakami
@@ -30,7 +30,7 @@ paperchart <type> -i data.json -o out.png [--width 1600] [--dpr 2]
 paperchart <type> --defaults -o out.png      # render the built-in sample
 ```
 
-Types: `table`, `latency`, `bytes`, `stacked-bar`, `grouped-bar`, `ranking`, `dumbbell`, `slope`, `line`, `area`, `small-multiples`, `scatter`, `heatmap`, `histogram`, `cdf`, `waterfall`, `critical-path`, `recall`, `pack-layout`, `delivery`.
+Types: `table`, `latency`, `bytes`, `stacked-bar`, `grouped-bar`, `funnel`, `ranking`, `dumbbell`, `slope`, `line`, `area`, `small-multiples`, `timeline`, `scatter`, `heatmap`, `calendar-heatmap`, `histogram`, `box-plot`, `cdf`, `radar`, `treemap`, `sankey`, `waterfall`, `critical-path`, `recall`, `pack-layout`, `delivery`.
 
 Themes: `paper` (warm off-white, rust), `ink` (near-white, black), `slate` (cool grey, deep blue), `forest` (off-white, forest green), `mono` (pure monochrome), `dusk` (dark charcoal, warm orange). Pass `--theme <name>` on the CLI or put `"theme": "<name>"` in the JSON envelope.
 
@@ -82,6 +82,13 @@ Short form. Full schemas are in the project README and in the per-type `skills/<
 - `histogram` &mdash; `{ bins: [{ x0, x1, count }] }`.
 - `cdf` &mdash; `{ points: [{ value, cumulative }] }`.
 - `waterfall` &mdash; `{ steps: [{ label, delta, subtotal? }] }`.
+- `timeline` &mdash; `Row[]` where each row is `{ label, caption?, spans: [{ start, end, label, accent? }], milestones?: [{ at, label }] }`.
+- `funnel` &mdash; `Stage[]`. Each stage: `{ label, caption?, count, accent? }`. Drop-off auto-computed between stages.
+- `sankey` &mdash; `{ sources: Node[], targets: Node[], flows: [{ from, to, value }] }`. Two-column flow diagram.
+- `treemap` &mdash; `Item[]` where each item is `{ label, value, caption?, accent?, children?: [{ label, value }] }`. Two-level squarified.
+- `radar` &mdash; `{ axes: [{ key, label, caption?, max? }], series: [{ label, caption?, accent?, values: { [axisKey]: number } }] }`.
+- `box-plot` &mdash; `Row[]`. Each row: `{ label, caption?, min, q1, median, q3, max, outliers?, accent? }`.
+- `calendar-heatmap` &mdash; `{ start?: "YYYY-MM-DD", days: [{ date, value }] }` or just `[{ date, value }]`.
 - `critical-path` &mdash; `Row[]`. Each row: `{ label, detail, startMs, endMs, kb, critical: boolean }`.
 - `recall` &mdash; `Query[]`. Each query: `{ query, hits, sets: "equal" }`.
 - `pack-layout` &mdash; `Segment[]`. Each segment: `{ label, detail, bytes, accent: boolean }`.

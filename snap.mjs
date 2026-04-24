@@ -37,6 +37,13 @@ const routes = [
   { slug: "grouped-bar", file: "grouped-bar.png" },
   { slug: "slope", file: "slope.png" },
   { slug: "small-multiples", file: "small-multiples.png" },
+  { slug: "timeline", file: "timeline.png" },
+  { slug: "funnel", file: "funnel.png" },
+  { slug: "sankey", file: "sankey.png" },
+  { slug: "treemap", file: "treemap.png" },
+  { slug: "radar", file: "radar.png" },
+  { slug: "box-plot", file: "box-plot.png" },
+  { slug: "calendar-heatmap", file: "calendar-heatmap.png" },
 ];
 
 const browser = await chromium.launch({ headless: true });

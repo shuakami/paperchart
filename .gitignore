@@ -18,6 +18,10 @@ npm-debug.log*
 node_modules
 dist
 dist-ssr
+
+# Local snapshot helpers
+debug-snap.mjs
+landing-snap.mjs
 *.local
 
 # Rendered chart outputs
