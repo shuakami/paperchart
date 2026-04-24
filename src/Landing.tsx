@@ -142,7 +142,7 @@ function TopBar({
             onChange={(e) => setThemeName(e.target.value as ThemeName)}
             aria-label="theme"
             style={{
-              background: bg,
+              backgroundColor: bg,
               color: ink,
               border: `1px solid ${rule}`,
               padding: "4px 26px 4px 10px",
