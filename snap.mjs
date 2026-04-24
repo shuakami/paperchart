@@ -32,6 +32,11 @@ const routes = [
   { slug: "dumbbell", file: "dumbbell.png" },
   { slug: "ranking", file: "ranking.png" },
   { slug: "waterfall", file: "waterfall.png" },
+  { slug: "table", file: "table.png" },
+  { slug: "stacked-bar", file: "stacked-bar.png" },
+  { slug: "grouped-bar", file: "grouped-bar.png" },
+  { slug: "slope", file: "slope.png" },
+  { slug: "small-multiples", file: "small-multiples.png" },
 ];
 
 const browser = await chromium.launch({ headless: true });

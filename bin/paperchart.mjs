@@ -32,6 +32,11 @@ const TYPES = [
   "dumbbell",
   "ranking",
   "waterfall",
+  "table",
+  "stacked-bar",
+  "grouped-bar",
+  "slope",
+  "small-multiples",
 ];
 
 const THEMES = ["paper", "ink", "slate", "forest", "mono", "dusk"];

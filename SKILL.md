@@ -1,6 +1,6 @@
 ---
 name: paperchart
-description: Generate clean, calm chart PNGs in the spirit of Anthropic and OpenAI blog posts. Trigger when the user asks to produce a chart, diagram or infographic for a technical blog post, release notes, a research write-up or a slide deck and wants a single warm palette, minimal chrome, heavy inline labelling, and PNG output rendered from React at native resolution. The primary surface is a shell CLI named `paperchart` that takes a JSON file and writes a PNG.
+description: Generate clean, calm chart PNGs in the spirit of Anthropic and OpenAI blog posts. Trigger when the user asks to produce a chart, model comparison table, diagram or infographic for a technical blog post, release notes, a research write-up or a slide deck and wants a single restrained palette, minimal chrome, heavy inline labelling, and PNG output rendered from React at native resolution. The primary surface is a shell CLI named `paperchart` that takes a JSON file and writes a PNG. Twenty primitives, six themes, layout + style overrides per chart.
 license: MIT
 metadata:
   author: shuakami
@@ -30,7 +30,9 @@ paperchart <type> -i data.json -o out.png [--width 1600] [--dpr 2]
 paperchart <type> --defaults -o out.png      # render the built-in sample
 ```
 
-Types: `latency`, `bytes`, `recall`, `critical-path`, `pack-layout`, `delivery`.
+Types: `table`, `latency`, `bytes`, `stacked-bar`, `grouped-bar`, `ranking`, `dumbbell`, `slope`, `line`, `area`, `small-multiples`, `scatter`, `heatmap`, `histogram`, `cdf`, `waterfall`, `critical-path`, `recall`, `pack-layout`, `delivery`.
+
+Themes: `paper` (warm off-white, rust), `ink` (near-white, black), `slate` (cool grey, deep blue), `forest` (off-white, forest green), `mono` (pure monochrome), `dusk` (dark charcoal, warm orange). Pass `--theme <name>` on the CLI or put `"theme": "<name>"` in the JSON envelope.
 
 Invoke it with `npx github:shuakami/paperchart <type> -i data.json -o out.png` from any directory. On first run npm clones the repo, runs `prepare` to build the Vite bundle, and `playwright-chromium`'s postinstall downloads headless Chromium once (~200&nbsp;MB). Subsequent runs are near-instant.
 
@@ -45,16 +47,45 @@ When the user asks for a chart:
 3. Run the CLI. Show the user the output path. If they want to iterate, edit the JSON and re-run &mdash; the file is the single source of truth.
 4. Never embed chart titles inside the chart. Titles belong in the blog prose next to the image.
 
+## The input envelope
+
+Every chart accepts the same shape:
+
+```json
+{
+  "theme": "ink",
+  "layout": { "width": 1800, "fontScale": 1.05, "xAxisCaption": "..." },
+  "style": { "accent": "#1f6feb" },
+  "data": <chart-specific payload>
+}
+```
+
+`theme`, `layout`, and `style` are optional. If you pass just `data` (or wrap your data as a bare array), the chart uses good defaults.
+
 ## Primitive schemas
 
-The JSON schemas are documented in detail in the project README. Short form:
+Short form. Full schemas are in the project README and in the per-type `skills/<type>/SKILL.md` files.
 
-- `latency` &mdash; `Row[]`. Each row: `{ group, caption, color: "neutral" | "accent", bars: [{ level, ms }] }`. Three rows, three bars each.
-- `bytes` &mdash; `Row[]`. Each row: `{ group, caption, accent, segments: [{ kb, fill, tag }], firstLoadKB, deferredKB }`. Up to 3 rows.
-- `recall` &mdash; `Query[]`. Each query: `{ query, hits, sets: "equal" }`. Twenty queries in the default layout.
-- `critical-path` &mdash; `Row[]`. Each row: `{ label, detail, startMs, endMs, kb, critical: boolean }`. Six rows.
+- `table` &mdash; `{ columns: [{ key, label, align?, unit?, group? }], rows: [{ label, caption?, highlight?, values: { [key]: number | string } }] }`. Model / config / product comparison. Exactly one `highlight: true` row.
+- `latency` &mdash; `Row[]`. Each row: `{ group, caption, color, bars: [{ level, ms }] }`.
+- `bytes` &mdash; `Row[]`. Each row: `{ group, caption, accent, segments: [{ kb, fill, tag }], firstLoadKB, deferredKB }`.
+- `stacked-bar` &mdash; `Row[]` where each row is `{ label, caption?, segments: [{ key, value, color? }] }`. Composition per row.
+- `grouped-bar` &mdash; `{ series: [{ key, label, color? }], groups: [{ label, caption?, values: { [key]: number } }] }`.
+- `ranking` &mdash; `Row[]`. Each row: `{ label, caption?, value, accent? }`. Sorted leaderboard, one accented row.
+- `dumbbell` &mdash; `Row[]`. Each row: `{ label, before, after }`.
+- `slope` &mdash; `{ startLabel, endLabel, unit?, series: [{ label, start, end, accent? }] }`.
+- `line` &mdash; `{ xLabels, series: [{ label, values, accent? }] }`.
+- `area` &mdash; `{ xLabels, series: [{ label, values }] }` (stacked).
+- `small-multiples` &mdash; `{ xLabels?, unit?, panels: [{ label, caption?, values, accent? }] }`.
+- `scatter` &mdash; `Point[]` with optional regression line.
+- `heatmap` &mdash; `{ rowLabels, colLabels, values: number[][] }`.
+- `histogram` &mdash; `{ bins: [{ x0, x1, count }] }`.
+- `cdf` &mdash; `{ points: [{ value, cumulative }] }`.
+- `waterfall` &mdash; `{ steps: [{ label, delta, subtotal? }] }`.
+- `critical-path` &mdash; `Row[]`. Each row: `{ label, detail, startMs, endMs, kb, critical: boolean }`.
+- `recall` &mdash; `Query[]`. Each query: `{ query, hits, sets: "equal" }`.
 - `pack-layout` &mdash; `Segment[]`. Each segment: `{ label, detail, bytes, accent: boolean }`.
-- `delivery` &mdash; `{ header, subheader, panels: PanelSpec[] }` with up to 3 panels. Each panel: `{ title, subtitle, accent, assets: [{ label, detail, kb, kind: "main" | "pack" }], note }`.
+- `delivery` &mdash; `{ header, subheader, panels: PanelSpec[] }` with up to 3 panels.
 
 ## The palette &mdash; five values only
 

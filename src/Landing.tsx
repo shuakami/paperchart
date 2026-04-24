@@ -1,144 +1,95 @@
 import { useEffect, useMemo, useState } from "react";
-import { THEMES, resolveTheme } from "./theme";
+import { resolveTheme, type Theme } from "./theme";
 import LatencyChart from "./charts/LatencyChart";
 import BytesChart from "./charts/BytesChart";
 import LineChart from "./charts/LineChart";
 import HeatmapChart from "./charts/HeatmapChart";
 import DumbbellChart from "./charts/DumbbellChart";
-
-// Editorial single-page landing — one theme at a time, live switchable,
-// large typography, no color-swatch wall, no fake sections. Inspired by
-// Linear, Vercel, Stripe Press, Anthropic News, Framer.
+import RecallChart from "./charts/RecallChart";
+import CriticalPathChart from "./charts/CriticalPathChart";
+import PackLayout from "./charts/PackLayout";
+import Delivery from "./charts/Delivery";
+import AreaChart from "./charts/AreaChart";
+import ScatterChart from "./charts/ScatterChart";
+import HistogramChart from "./charts/HistogramChart";
+import CdfChart from "./charts/CdfChart";
+import RankingChart from "./charts/RankingChart";
+import WaterfallChart from "./charts/WaterfallChart";
+import TableChart from "./charts/TableChart";
+import StackedBarChart from "./charts/StackedBarChart";
+import GroupedBarChart from "./charts/GroupedBarChart";
+import SlopeChart from "./charts/SlopeChart";
+import SmallMultiplesChart from "./charts/SmallMultiplesChart";
 
 const THEME_ORDER = ["paper", "ink", "slate", "forest", "mono", "dusk"] as const;
 type ThemeName = (typeof THEME_ORDER)[number];
 
-const PRIMITIVES_ALL: {
+type PrimitiveDef = {
   slug: string;
   name: string;
   tag: string;
-  category: "distribution" | "comparison" | "structure" | "flow";
-}[] = [
-  { slug: "latency", name: "latency", tag: "grouped horizontal bars, log scale", category: "comparison" },
-  { slug: "bytes", name: "bytes", tag: "stacked bars for critical vs deferred", category: "comparison" },
-  { slug: "pack-layout", name: "pack-layout", tag: "byte-level binary anatomy", category: "structure" },
-  { slug: "delivery", name: "delivery", tag: "three-panel architecture side-by-side", category: "structure" },
-  { slug: "recall", name: "recall", tag: "per-row dot plot for set equality", category: "distribution" },
-  { slug: "critical-path", name: "critical-path", tag: "network timeline with milestones", category: "flow" },
-  { slug: "line", name: "line", tag: "multi-series line over time", category: "flow" },
-  { slug: "area", name: "area", tag: "stacked area composition over time", category: "flow" },
-  { slug: "scatter", name: "scatter", tag: "correlation with regression line", category: "distribution" },
-  { slug: "heatmap", name: "heatmap", tag: "matrix of values, two-color scale", category: "distribution" },
-  { slug: "histogram", name: "histogram", tag: "binned frequency distribution", category: "distribution" },
-  { slug: "cdf", name: "cdf", tag: "empirical cumulative distribution", category: "distribution" },
-  { slug: "dumbbell", name: "dumbbell", tag: "paired before / after per row", category: "comparison" },
-  { slug: "ranking", name: "ranking", tag: "sorted horizontal bars, one accented", category: "comparison" },
-  { slug: "waterfall", name: "waterfall", tag: "additive / subtractive steps", category: "flow" },
+  render: (theme: Theme) => React.ReactElement;
+};
+
+const PRIMITIVES: PrimitiveDef[] = [
+  { slug: "table", name: "table", tag: "Comparison across models or configurations", render: (t) => <TableChart theme={t} /> },
+  { slug: "latency", name: "latency", tag: "Grouped horizontal bars on a log scale", render: (t) => <LatencyChart theme={t} /> },
+  { slug: "bytes", name: "bytes", tag: "Stacked bars for critical and deferred", render: (t) => <BytesChart theme={t} /> },
+  { slug: "stacked-bar", name: "stacked bar", tag: "Composition by category", render: (t) => <StackedBarChart theme={t} /> },
+  { slug: "grouped-bar", name: "grouped bar", tag: "Side-by-side categorical comparison", render: (t) => <GroupedBarChart theme={t} /> },
+  { slug: "ranking", name: "ranking", tag: "Sorted leaderboard, one row accented", render: (t) => <RankingChart theme={t} /> },
+  { slug: "dumbbell", name: "dumbbell", tag: "Paired before and after per row", render: (t) => <DumbbellChart theme={t} /> },
+  { slug: "slope", name: "slope", tag: "Two-point trend with percentage change", render: (t) => <SlopeChart theme={t} /> },
+  { slug: "line", name: "line", tag: "Multi-series line over time", render: (t) => <LineChart theme={t} /> },
+  { slug: "area", name: "area", tag: "Stacked area composition over time", render: (t) => <AreaChart theme={t} /> },
+  { slug: "small-multiples", name: "small multiples", tag: "One shape, repeated across subjects", render: (t) => <SmallMultiplesChart theme={t} /> },
+  { slug: "scatter", name: "scatter", tag: "Correlation with optional regression", render: (t) => <ScatterChart theme={t} /> },
+  { slug: "heatmap", name: "heatmap", tag: "Matrix on a two-color scale", render: (t) => <HeatmapChart theme={t} /> },
+  { slug: "histogram", name: "histogram", tag: "Binned frequency distribution", render: (t) => <HistogramChart theme={t} /> },
+  { slug: "cdf", name: "cdf", tag: "Empirical cumulative distribution", render: (t) => <CdfChart theme={t} /> },
+  { slug: "waterfall", name: "waterfall", tag: "Additive and subtractive steps", render: (t) => <WaterfallChart theme={t} /> },
+  { slug: "critical-path", name: "critical path", tag: "Network timeline with milestones", render: (t) => <CriticalPathChart theme={t} /> },
+  { slug: "recall", name: "recall", tag: "Per-row dot plot for set equality", render: (t) => <RecallChart theme={t} /> },
+  { slug: "pack-layout", name: "pack layout", tag: "Byte-level binary anatomy", render: (t) => <PackLayout theme={t} /> },
+  { slug: "delivery", name: "delivery", tag: "Three-panel architecture comparison", render: (t) => <Delivery theme={t} /> },
 ];
 
-const INSTALL_CMD = "npx github:shuakami/paperchart latency -i data.json -o latency.png";
+const INSTALL_CMD = "npx github:shuakami/paperchart <type> -i data.json -o out.png";
 const SKILL_CMD = "npx skills add shuakami/paperchart";
-const THEME_FLAG_EXAMPLE =
-  'npx github:shuakami/paperchart dumbbell -i data.json -o out.png --theme ink';
-
-// Simplified JSON — one canonical example
-const JSON_EXAMPLE = `{
-  "theme": "paper",
-  "layout": {
-    "width": 1600,
-    "fontScale": 1,
-    "xAxisCaption": "per-query latency (ms, log scale)",
-    "hideCorner": false
-  },
-  "data": [
-    {
-      "group": "Fuse fuzzy matcher",
-      "caption": "JS-side scorer over inlined JSON",
-      "bars": [
-        { "level": "p50", "ms": 8.12 },
-        { "level": "p95", "ms": 17.30 },
-        { "level": "p99", "ms": 25.41 }
-      ]
-    },
-    {
-      "group": "new engine",
-      "color": "accent",
-      "bars": [
-        { "level": "p50", "ms": 0.064 },
-        { "level": "p95", "ms": 0.302 },
-        { "level": "p99", "ms": 0.470 }
-      ]
-    }
-  ]
-}`;
 
 export default function Landing() {
   const [themeName, setThemeName] = useState<ThemeName>("paper");
   const theme = useMemo(() => resolveTheme(themeName), [themeName]);
-  const INK = theme.ink;
-  const BG = theme.bg;
-  const MUTED = theme.muted;
-  const ACCENT = theme.accent;
-  const RULE = theme.rule;
-  const PANEL = theme.panel ?? theme.bg;
+  const { ink, bg, rule } = theme;
 
-  // Update body bg so the viewport paints consistently on mobile / when rubber-banding
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.body.style.background = BG;
-    document.body.style.color = INK;
+    document.body.style.background = bg;
+    document.body.style.color = ink;
     document.body.style.transition = "background 220ms ease, color 220ms ease";
-  }, [BG, INK]);
+  }, [bg, ink]);
 
   return (
     <div
       className="min-h-screen w-full"
-      style={{ background: BG, color: INK, transition: "background 220ms ease, color 220ms ease" }}
+      style={{
+        background: bg,
+        color: ink,
+        transition: "background 220ms ease, color 220ms ease",
+      }}
     >
-      {/* Sticky top bar with theme switcher */}
-      <TopBar
-        themeName={themeName}
-        setThemeName={setThemeName}
-        INK={INK}
-        BG={BG}
-        MUTED={MUTED}
-        ACCENT={ACCENT}
-        RULE={RULE}
-      />
+      <TopBar themeName={themeName} setThemeName={setThemeName} theme={theme} />
 
-      {/* Editorial column — generous whitespace, large type */}
-      <main className="mx-auto w-full max-w-[1080px] px-5 pb-24 sm:px-8">
-        <Hero INK={INK} MUTED={MUTED} ACCENT={ACCENT} RULE={RULE} BG={BG} themeName={themeName} />
-
-        <HeroChart theme={theme} />
-
-        <Divider RULE={RULE} />
-
-        <Install INK={INK} MUTED={MUTED} ACCENT={ACCENT} RULE={RULE} PANEL={PANEL} BG={BG} />
-
-        <Divider RULE={RULE} />
-
-        <PrimitivesSection
-          INK={INK}
-          MUTED={MUTED}
-          RULE={RULE}
-          BG={BG}
-          PANEL={PANEL}
-          theme={theme}
-          themeName={themeName}
-        />
-
-        <Divider RULE={RULE} />
-
-        <Customize INK={INK} MUTED={MUTED} RULE={RULE} PANEL={PANEL} BG={BG} />
-
-        <Divider RULE={RULE} />
-
-        <ThemeShowcase theme={theme} INK={INK} MUTED={MUTED} RULE={RULE} BG={BG} PANEL={PANEL} />
-
-        <Divider RULE={RULE} />
-
-        <Footer INK={INK} MUTED={MUTED} RULE={RULE} />
+      <main className="mx-auto w-full max-w-[980px] px-5 pb-24 sm:px-8">
+        <Hero theme={theme} />
+        <Divider rule={rule} />
+        <Install theme={theme} />
+        <Divider rule={rule} />
+        <Gallery theme={theme} />
+        <Divider rule={rule} />
+        <JsonShape theme={theme} />
+        <Divider rule={rule} />
+        <Footer theme={theme} />
       </main>
     </div>
   );
@@ -147,40 +98,34 @@ export default function Landing() {
 function TopBar({
   themeName,
   setThemeName,
-  INK,
-  BG,
-  MUTED,
-  ACCENT,
-  RULE,
+  theme,
 }: {
   themeName: ThemeName;
   setThemeName: (n: ThemeName) => void;
-  INK: string;
-  BG: string;
-  MUTED: string;
-  ACCENT: string;
-  RULE: string;
+  theme: Theme;
 }) {
+  const { ink, bg, rule } = theme;
   return (
     <div
       className="sticky top-0 z-20 w-full"
       style={{
-        background: BG + "ee",
-        backdropFilter: "saturate(180%) blur(10px)",
-        WebkitBackdropFilter: "saturate(180%) blur(10px)",
-        borderBottom: `1px solid ${RULE}`,
+        background: bg,
+        borderBottom: `1px solid ${rule}`,
       }}
     >
-      <div className="mx-auto flex w-full max-w-[1080px] items-center justify-between px-5 py-3 sm:px-8">
+      <div className="mx-auto flex w-full max-w-[980px] items-center justify-between gap-4 px-5 py-4 sm:px-8">
         <a
           href="#/"
-          className="flex items-center gap-2 text-[15px] font-semibold no-underline"
-          style={{ color: INK, letterSpacing: "-0.01em" }}
+          className="text-[15px] font-medium no-underline"
+          style={{ color: ink, letterSpacing: "-0.01em" }}
         >
-          <Mark color={ACCENT} />
           paperchart
         </a>
-        <div className="flex items-center gap-1 overflow-x-auto">
+        <div
+          className="flex items-center gap-1.5"
+          role="group"
+          aria-label="theme"
+        >
           {THEME_ORDER.map((n) => {
             const t = resolveTheme(n);
             const active = themeName === n;
@@ -189,28 +134,26 @@ function TopBar({
                 key={n}
                 type="button"
                 onClick={() => setThemeName(n)}
-                className="flex items-center gap-2 whitespace-nowrap px-2.5 py-1.5 text-[12.5px]"
-                style={{
-                  background: active ? INK : "transparent",
-                  color: active ? BG : MUTED,
-                  border: `1px solid ${active ? INK : RULE}`,
-                  cursor: "pointer",
-                  fontFamily: "Inter, -apple-system, sans-serif",
-                  letterSpacing: "-0.005em",
-                  transition: "background 160ms ease, color 160ms ease, border-color 160ms ease",
-                }}
+                title={n}
                 aria-pressed={active}
+                style={{
+                  width: 22,
+                  height: 22,
+                  padding: 0,
+                  background: t.bg,
+                  border: `1px solid ${active ? ink : rule}`,
+                  cursor: "pointer",
+                  position: "relative",
+                  transition: "border-color 160ms ease",
+                }}
               >
                 <span
                   style={{
-                    display: "inline-block",
-                    width: 10,
-                    height: 10,
+                    position: "absolute",
+                    inset: 4,
                     background: t.accent,
-                    border: `1px solid ${active ? BG : t.rule}`,
                   }}
                 />
-                {n}
               </button>
             );
           })}
@@ -220,735 +163,362 @@ function TopBar({
   );
 }
 
-function Mark({ color }: { color: string }) {
+function Hero({ theme }: { theme: Theme }) {
+  const { ink, muted } = theme;
   return (
-    <svg width={18} height={18} viewBox="0 0 24 24" aria-hidden style={{ display: "block" }}>
-      <rect x={3} y={3} width={18} height={18} fill="none" stroke={color} strokeWidth={2} />
-      <line x1={7} y1={15} x2={7} y2={12} stroke={color} strokeWidth={2} />
-      <line x1={12} y1={15} x2={12} y2={8} stroke={color} strokeWidth={2} />
-      <line x1={17} y1={15} x2={17} y2={11} stroke={color} strokeWidth={2} />
-    </svg>
-  );
-}
-
-function Hero({
-  INK,
-  MUTED,
-  ACCENT,
-  RULE,
-  BG,
-  themeName,
-}: {
-  INK: string;
-  MUTED: string;
-  ACCENT: string;
-  RULE: string;
-  BG: string;
-  themeName: string;
-}) {
-  return (
-    <header className="pt-16 sm:pt-24">
-      <div
-        className="mb-6 inline-flex items-center gap-2 px-3 py-1 text-[12px] tracking-[-0.005em]"
-        style={{
-          border: `1px solid ${RULE}`,
-          color: MUTED,
-          background: BG,
-        }}
-      >
-        <span
-          style={{
-            display: "inline-block",
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            background: ACCENT,
-          }}
-        />
-        live theme · {themeName}
-      </div>
+    <header className="pt-14 sm:pt-20">
       <h1
-        className="m-0 text-[44px] font-semibold leading-[1.05] tracking-[-0.02em] sm:text-[72px] sm:leading-[1.04]"
-        style={{ color: INK }}
+        className="m-0 text-[42px] font-normal leading-[1.08] tracking-[-0.02em] sm:text-[64px] sm:leading-[1.06]"
+        style={{ color: ink }}
       >
-        Quiet charts
-        <br />
-        <span style={{ color: MUTED }}>for the writing</span>
-        <br />
-        <span style={{ color: INK }}>you actually publish.</span>
+        Charts that read like<br />
+        the writing around them.
       </h1>
       <p
-        className="mt-7 max-w-[580px] text-[16px] leading-[1.6] sm:text-[18px] sm:leading-[1.55]"
-        style={{ color: MUTED }}
+        className="mt-6 max-w-[600px] text-[16px] leading-[1.6] sm:text-[18px] sm:leading-[1.55]"
+        style={{ color: muted }}
       >
-        Fifteen chart primitives with a single aesthetic language, six named
-        themes, and a CLI that takes a JSON file and writes a 2&times;-DPR PNG.
-        Built to be driven by AI agents: hand it structured data, get back a
-        figure you can ship next to real writing.
+        Twenty primitives, six themes, one command. Feed structured JSON, get
+        back a PNG at two-times device pixel ratio. Good defaults, every knob
+        overridable, nothing flashy.
       </p>
-      <div className="mt-8 flex flex-wrap items-center gap-3">
-        <a
-          href="#primitives"
-          className="inline-flex items-center gap-2 px-5 py-2.5 text-[14px] font-medium no-underline"
-          style={{
-            background: INK,
-            color: BG,
-            border: `1px solid ${INK}`,
-          }}
+      <div className="mt-10">
+        <FeaturedChart theme={theme} />
+        <p
+          className="mt-4 text-[13.5px] leading-[1.55]"
+          style={{ color: muted }}
         >
-          browse primitives
-          <span aria-hidden>→</span>
-        </a>
-        <a
-          href="https://github.com/shuakami/paperchart"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 px-5 py-2.5 text-[14px] font-medium no-underline"
-          style={{
-            color: INK,
-            border: `1px solid ${RULE}`,
-          }}
-        >
-          github
-          <span aria-hidden>↗</span>
-        </a>
+          A table in the current theme. Column groups on top, right-aligned
+          numerics, a quiet accent rail on the row you want the reader to land
+          on. Change the theme above to see every primitive follow.
+        </p>
       </div>
     </header>
   );
 }
 
-// Hero chart — live render the currently selected theme so the switcher
-// visibly changes the whole page. We use Dumbbell because it visually
-// rewards the theme change the most.
-function HeroChart({ theme }: { theme: import("./theme").Theme }) {
+function FeaturedChart({ theme }: { theme: Theme }) {
   return (
     <div
-      className="mt-16 overflow-hidden"
       style={{
+        background: theme.bg,
         border: `1px solid ${theme.rule}`,
-        background: theme.bg,
       }}
     >
-      <div
-        style={{
-          display: "block",
-          width: "100%",
-          aspectRatio: "16 / 9",
-        }}
-      >
-        <div
-          style={{
-            transform: "scale(1)",
-            transformOrigin: "top left",
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-              }}
-            >
-              <svg
-                viewBox="0 0 1600 900"
-                preserveAspectRatio="xMidYMid meet"
-                width="100%"
-                height="100%"
-                style={{ display: "block" }}
-              >
-                <foreignObject x={0} y={0} width={1600} height={900}>
-                  <div
-                    // eslint-disable-next-line react/no-unknown-property
-                    {...({ xmlns: "http://www.w3.org/1999/xhtml" } as Record<string, string>)}
-                    style={{ width: 1600, height: 900 }}
-                  >
-                    <DumbbellChart theme={theme} />
-                  </div>
-                </foreignObject>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FitSvg aspect={1600 / 720}>
+        <TableChart theme={theme} />
+      </FitSvg>
     </div>
   );
 }
 
-function Install({
-  INK,
-  MUTED,
-  ACCENT,
-  RULE,
-  PANEL,
-  BG,
+function FitSvg({
+  aspect,
+  children,
 }: {
-  INK: string;
-  MUTED: string;
-  ACCENT: string;
-  RULE: string;
-  PANEL: string;
-  BG: string;
+  aspect: number;
+  children: React.ReactNode;
 }) {
-  return (
-    <section className="pt-20 sm:pt-28">
-      <Kicker>install</Kicker>
-      <h2
-        className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[38px]"
-        style={{ color: INK }}
-      >
-        One command in, one image out.
-      </h2>
-      <p
-        className="mt-4 max-w-[620px] text-[15px] leading-[1.65] sm:text-[16.5px]"
-        style={{ color: MUTED }}
-      >
-        No build step, no install. The first invocation compiles the renderer
-        and caches it. Subsequent renders are instant.
-      </p>
-      <div className="mt-8 space-y-3">
-        <CopyBox cmd={INSTALL_CMD} INK={INK} MUTED={MUTED} ACCENT={ACCENT} RULE={RULE} PANEL={PANEL} BG={BG} />
-        <CopyBox cmd={SKILL_CMD} INK={INK} MUTED={MUTED} ACCENT={ACCENT} RULE={RULE} PANEL={PANEL} BG={BG} muted />
-        <CopyBox
-          cmd={THEME_FLAG_EXAMPLE}
-          INK={INK}
-          MUTED={MUTED}
-          ACCENT={ACCENT}
-          RULE={RULE}
-          PANEL={PANEL}
-          BG={BG}
-          muted
-        />
-      </div>
-    </section>
-  );
-}
-
-function CopyBox({
-  cmd,
-  muted,
-  INK,
-  MUTED,
-  ACCENT,
-  RULE,
-  PANEL,
-  BG,
-}: {
-  cmd: string;
-  muted?: boolean;
-  INK: string;
-  MUTED: string;
-  ACCENT: string;
-  RULE: string;
-  PANEL: string;
-  BG: string;
-}) {
-  const [copied, setCopied] = useState(false);
-  const accentColor = muted ? MUTED : ACCENT;
-  return (
-    <div
-      className="flex items-center gap-3 overflow-x-auto px-4 py-3 sm:px-5 sm:py-3.5"
-      style={{
-        background: PANEL,
-        border: `1px solid ${RULE}`,
-        fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-      }}
-    >
-      <span className="flex-shrink-0 text-[13px]" style={{ color: MUTED }} aria-hidden>
-        $
-      </span>
-      <code className="flex-1 whitespace-nowrap text-[13.5px] sm:text-[14.5px]" style={{ color: INK }}>
-        {cmd}
-      </code>
-      <button
-        type="button"
-        onClick={() => {
-          navigator.clipboard.writeText(cmd);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1200);
-        }}
-        className="flex-shrink-0 text-[12px] sm:text-[12.5px]"
-        style={{
-          border: `1px solid ${RULE}`,
-          background: BG,
-          color: copied ? accentColor : MUTED,
-          padding: "4px 10px",
-          cursor: "pointer",
-          fontFamily: "Inter, -apple-system, sans-serif",
-        }}
-      >
-        {copied ? "copied" : "copy"}
-      </button>
-    </div>
-  );
-}
-
-function PrimitivesSection({
-  INK,
-  MUTED,
-  RULE,
-  BG,
-  PANEL,
-  theme,
-  themeName,
-}: {
-  INK: string;
-  MUTED: string;
-  RULE: string;
-  BG: string;
-  PANEL: string;
-  theme: import("./theme").Theme;
-  themeName: string;
-}) {
-  const [category, setCategory] = useState<"all" | "comparison" | "distribution" | "structure" | "flow">("all");
-  const filtered = category === "all" ? PRIMITIVES_ALL : PRIMITIVES_ALL.filter((p) => p.category === category);
-  const liveSlugs = new Set(["latency", "bytes", "line", "heatmap", "dumbbell"]);
-  const categories: ("all" | "comparison" | "distribution" | "structure" | "flow")[] = [
-    "all",
-    "comparison",
-    "distribution",
-    "structure",
-    "flow",
-  ];
-  return (
-    <section id="primitives" className="pt-20 sm:pt-28">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Kicker>primitives</Kicker>
-          <h2
-            className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[38px]"
-            style={{ color: INK }}
-          >
-            Fifteen chart shapes.{" "}
-            <span style={{ color: MUTED }}>One language.</span>
-          </h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {categories.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setCategory(c)}
-              className="px-3 py-1.5 text-[12.5px]"
-              style={{
-                background: category === c ? INK : "transparent",
-                color: category === c ? BG : MUTED,
-                border: `1px solid ${category === c ? INK : RULE}`,
-                cursor: "pointer",
-                fontFamily: "Inter, -apple-system, sans-serif",
-              }}
-              aria-pressed={category === c}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((p) => {
-          const isLive = liveSlugs.has(p.slug);
-          return (
-            <a
-              key={p.slug}
-              href={`#/${p.slug}${themeName !== "paper" ? "" : ""}`}
-              className="group block no-underline"
-              style={{ color: INK, textDecoration: "none" }}
-            >
-              <div
-                className="overflow-hidden transition-opacity group-hover:opacity-85"
-                style={{
-                  border: `1px solid ${RULE}`,
-                  background: BG,
-                }}
-              >
-                <div style={{ aspectRatio: "16 / 9", overflow: "hidden", position: "relative" }}>
-                  {isLive ? (
-                    <div style={{ position: "absolute", inset: 0 }}>
-                      <LivePreview slug={p.slug} theme={theme} />
-                    </div>
-                  ) : (
-                    <img
-                      src={`${import.meta.env.BASE_URL}previews/${p.slug}.png`}
-                      alt={`${p.name} preview`}
-                      loading="lazy"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                        padding: 8,
-                        background: BG,
-                      }}
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  )}
-                </div>
-                <div
-                  className="flex items-center justify-between gap-3 px-4 py-3"
-                  style={{ borderTop: `1px solid ${RULE}`, background: PANEL }}
-                >
-                  <div>
-                    <div className="text-[14.5px] font-semibold" style={{ color: INK, letterSpacing: "-0.01em" }}>
-                      {p.name}
-                    </div>
-                    <div className="mt-0.5 text-[12.5px]" style={{ color: MUTED }}>
-                      {p.tag}
-                    </div>
-                  </div>
-                  <span className="text-[12px]" style={{ color: MUTED }}>
-                    {p.category}
-                  </span>
-                </div>
-              </div>
-            </a>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function LivePreview({ slug, theme }: { slug: string; theme: import("./theme").Theme }) {
-  // Scaled-down live render of a real chart — SVGs scale perfectly
-  const chart = (() => {
-    switch (slug) {
-      case "latency":
-        return <LatencyChart theme={theme} />;
-      case "bytes":
-        return <BytesChart theme={theme} />;
-      case "line":
-        return <LineChart theme={theme} />;
-      case "heatmap":
-        return <HeatmapChart theme={theme} />;
-      case "dumbbell":
-        return <DumbbellChart theme={theme} />;
-      default:
-        return null;
-    }
-  })();
+  // Scales an absolute-sized chart SVG to the container width while preserving
+  // the intrinsic aspect. Works because every chart renders as a <svg width=...
+  // height=... viewBox=...>.
   return (
     <div
       style={{
+        position: "relative",
         width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: theme.bg,
+        aspectRatio: String(aspect),
         overflow: "hidden",
       }}
     >
       <div
         style={{
-          width: "100%",
-          height: "100%",
+          position: "absolute",
+          inset: 0,
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          alignItems: "stretch",
+          justifyContent: "stretch",
         }}
       >
         <div
-          className="paperchart-scale"
           style={{
-            width: "100%",
-            height: "100%",
+            flex: 1,
+            display: "flex",
+            alignItems: "stretch",
+            justifyContent: "stretch",
           }}
         >
-          <svg
-            viewBox="0 0 1600 900"
-            preserveAspectRatio="xMidYMid meet"
-            width="100%"
-            height="100%"
-            style={{ display: "block" }}
-          >
-            <foreignObject x={0} y={0} width={1600} height={900}>
-              <div
-                // eslint-disable-next-line react/no-unknown-property
-                {...({ xmlns: "http://www.w3.org/1999/xhtml" } as Record<string, string>)}
-                style={{ width: 1600, height: 900, background: theme.bg }}
-              >
-                {chart}
-              </div>
-            </foreignObject>
-          </svg>
+          <style>{`
+            .fitsvg svg { width: 100% !important; height: 100% !important; display: block; }
+          `}</style>
+          <div className="fitsvg" style={{ width: "100%" }}>{children}</div>
         </div>
       </div>
     </div>
   );
 }
 
-function Customize({
-  INK,
-  MUTED,
-  RULE,
-  PANEL,
-  BG,
-}: {
-  INK: string;
-  MUTED: string;
-  RULE: string;
-  PANEL: string;
-  BG: string;
-}) {
+function Divider({ rule }: { rule: string }) {
   return (
-    <section className="pt-20 sm:pt-28">
-      <Kicker>customize</Kicker>
+    <hr
+      className="my-16 sm:my-20"
+      style={{ border: 0, borderTop: `1px solid ${rule}` }}
+    />
+  );
+}
+
+function Install({ theme }: { theme: Theme }) {
+  const { ink, muted } = theme;
+  return (
+    <section>
       <h2
-        className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[38px]"
-        style={{ color: INK }}
+        className="m-0 text-[22px] font-medium leading-[1.3] tracking-[-0.01em] sm:text-[26px]"
+        style={{ color: ink }}
       >
-        Defaults you ship. Knobs you reach for.
+        Use it from the command line.
       </h2>
       <p
-        className="mt-4 max-w-[620px] text-[15px] leading-[1.65] sm:text-[16.5px]"
-        style={{ color: MUTED }}
+        className="mt-3 max-w-[620px] text-[15px] leading-[1.62]"
+        style={{ color: muted }}
       >
-        Every chart accepts <code style={{ color: INK, fontFamily: "ui-monospace, monospace" }}>{"{ data, theme, layout, style }"}</code>.
-        Give it just <code style={{ color: INK, fontFamily: "ui-monospace, monospace" }}>data</code> and you get the
-        canonical layout. Reach further when an agent decides the defaults
-        don&rsquo;t fit — canvas size, padding, font scale, axis captions,
-        per-slot color overrides.
+        Node 18 or newer. The first run prepares a vendored build and installs
+        a headless browser. Every subsequent invocation is a single screenshot
+        round-trip.
       </p>
-      <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1fr]">
-        <pre
-          className="m-0 overflow-x-auto px-5 py-5 text-[12.5px] leading-[1.55]"
-          style={{
-            background: PANEL,
-            color: INK,
-            border: `1px solid ${RULE}`,
-            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-          }}
-        >
-          <code>{JSON_EXAMPLE}</code>
-        </pre>
-        <div className="flex flex-col gap-3">
-          <Knob label="theme" body="Named palette, or a partial override." INK={INK} MUTED={MUTED} RULE={RULE} BG={BG} />
-          <Knob
-            label="layout.width · height · padding"
-            body="Tune canvas shape and margins per chart instance."
-            INK={INK}
-            MUTED={MUTED}
-            RULE={RULE}
-            BG={BG}
-          />
-          <Knob
-            label="layout.fontScale"
-            body="One multiplier for every text size — scales predictably."
-            INK={INK}
-            MUTED={MUTED}
-            RULE={RULE}
-            BG={BG}
-          />
-          <Knob
-            label="layout.xAxisCaption · footnote · hideCorner"
-            body="Inline annotations, no hand-drawn text layers needed."
-            INK={INK}
-            MUTED={MUTED}
-            RULE={RULE}
-            BG={BG}
-          />
-          <Knob
-            label="style.ink · style.accent · …"
-            body="Per-slot color nudges when the theme is 90% right."
-            INK={INK}
-            MUTED={MUTED}
-            RULE={RULE}
-            BG={BG}
-          />
-        </div>
-      </div>
+
+      <CodeBlock theme={theme} label="CLI" code={INSTALL_CMD} />
+      <CodeBlock theme={theme} label="Agent skill" code={SKILL_CMD} />
+
+      <p
+        className="mt-4 text-[13.5px] leading-[1.6]"
+        style={{ color: muted }}
+      >
+        Replace <code style={{ color: ink }}>&lt;type&gt;</code> with any slug
+        from the gallery below. Add <code style={{ color: ink }}>--theme</code>{" "}
+        to pick a palette, <code style={{ color: ink }}>--width</code> to
+        override the canvas.
+      </p>
     </section>
   );
 }
 
-function Knob({
+function CodeBlock({
+  theme,
   label,
-  body,
-  INK,
-  MUTED,
-  RULE,
-  BG,
+  code,
 }: {
+  theme: Theme;
   label: string;
-  body: string;
-  INK: string;
-  MUTED: string;
-  RULE: string;
-  BG: string;
+  code: string;
 }) {
+  const { ink, muted, rule, bg } = theme;
+  void bg;
+  const panel = theme.panel ?? bg;
   return (
     <div
-      className="px-4 py-3"
+      className="mt-5"
       style={{
-        border: `1px solid ${RULE}`,
-        background: BG,
+        border: `1px solid ${rule}`,
+        background: panel,
       }}
     >
       <div
-        className="text-[13.5px]"
+        className="flex items-center justify-between px-4 py-2"
         style={{
-          color: INK,
-          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+          borderBottom: `1px solid ${rule}`,
+          color: muted,
+          fontSize: 12,
         }}
       >
-        {label}
+        <span>{label}</span>
+        <CopyButton text={code} theme={theme} />
       </div>
-      <div className="mt-1 text-[13px] leading-[1.55]" style={{ color: MUTED }}>
-        {body}
-      </div>
+      <pre
+        className="m-0 overflow-x-auto px-4 py-3 text-[13.5px] leading-[1.6]"
+        style={{
+          color: ink,
+          fontFamily: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+        }}
+      >
+        <code>{code}</code>
+      </pre>
     </div>
   );
 }
 
-function ThemeShowcase({
-  INK,
-  MUTED,
-  RULE,
-  BG,
-  PANEL,
-}: {
-  theme: import("./theme").Theme;
-  INK: string;
-  MUTED: string;
-  RULE: string;
-  BG: string;
-  PANEL: string;
-}) {
+function CopyButton({ text, theme }: { text: string; theme: Theme }) {
+  const [copied, setCopied] = useState(false);
   return (
-    <section className="pt-20 sm:pt-28">
-      <Kicker>themes</Kicker>
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1400);
+        } catch {
+          // ignore
+        }
+      }}
+      style={{
+        background: "transparent",
+        border: "none",
+        color: theme.muted,
+        cursor: "pointer",
+        fontSize: 12,
+        padding: 0,
+      }}
+    >
+      {copied ? "copied" : "copy"}
+    </button>
+  );
+}
+
+function Gallery({ theme }: { theme: Theme }) {
+  const { ink, muted, rule } = theme;
+  return (
+    <section id="primitives">
       <h2
-        className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[38px]"
-        style={{ color: INK }}
+        className="m-0 text-[22px] font-medium leading-[1.3] tracking-[-0.01em] sm:text-[26px]"
+        style={{ color: ink }}
       >
-        Six palettes.{" "}
-        <span style={{ color: MUTED }}>Pick one at the top. Watch everything change.</span>
+        Twenty primitives.
       </h2>
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {THEME_ORDER.map((n) => {
-          const t = THEMES[n];
-          return (
+      <p
+        className="mt-3 max-w-[620px] text-[15px] leading-[1.62]"
+        style={{ color: muted }}
+      >
+        Every tile below is a live render, not a static image. Flip the theme
+        switcher in the header and watch each one follow. Every chart accepts
+        the same <code style={{ color: ink }}>{"{ data, theme, layout, style }"}</code>{" "}
+        envelope.
+      </p>
+
+      <div className="mt-10 grid grid-cols-1 gap-10">
+        {PRIMITIVES.map((p, i) => (
+          <figure key={p.slug} className="m-0">
             <div
-              key={n}
-              className="px-4 py-4"
               style={{
-                background: t.bg,
-                color: t.ink,
-                border: `1px solid ${RULE}`,
+                border: `1px solid ${rule}`,
+                background: theme.bg,
               }}
             >
-              <div
-                className="text-[13.5px]"
-                style={{
-                  color: t.ink,
-                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-                }}
-              >
-                {n}
-              </div>
-              <div className="mt-2 flex items-center gap-1.5">
-                {[t.bg, t.ink, t.muted, t.secondary, t.accent].map((c, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      display: "inline-block",
-                      width: 18,
-                      height: 18,
-                      background: c,
-                      border: `1px solid ${t.rule}`,
-                    }}
-                  />
-                ))}
-              </div>
+              <FitSvg aspect={computeAspect(p.slug)}>
+                {p.render(theme)}
+              </FitSvg>
             </div>
-          );
-        })}
+            <figcaption
+              className="mt-3 flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+              style={{ color: muted, fontSize: 13.5, lineHeight: 1.5 }}
+            >
+              <span style={{ color: ink }}>
+                <span style={{ color: muted, fontVariantNumeric: "tabular-nums" }}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="mx-2" style={{ color: muted }}>·</span>
+                {p.name}
+              </span>
+              <span>{p.tag}</span>
+            </figcaption>
+          </figure>
+        ))}
       </div>
-      <p
-        className="mt-6 max-w-[620px] text-[13.5px] leading-[1.65]"
-        style={{ color: MUTED }}
-      >
-        Themes are pure data — just five color tokens plus a background and a
-        rule color. You can pass a theme name (<code style={{ color: INK }}>--theme ink</code>) or a partial object
-        in <code style={{ color: INK }}>{'{ "theme": { ... } }'}</code> to override any token for a single chart.
-        <span style={{ color: PANEL === BG ? MUTED : INK }}></span>
-      </p>
     </section>
   );
 }
 
-function Kicker({ children }: { children: React.ReactNode }) {
+function computeAspect(slug: string): number {
+  // match the default width/height each chart uses, so FitSvg reserves the
+  // right amount of room. Defaults come from each chart's BaseLayout defaults.
+  switch (slug) {
+    case "table":
+      return 1600 / 720;
+    case "small-multiples":
+      return 1600 / 900;
+    case "pack-layout":
+      return 1600 / 780;
+    case "delivery":
+      return 1600 / 900;
+    case "critical-path":
+      return 1600 / 780;
+    case "heatmap":
+      return 1600 / 900;
+    default:
+      return 1600 / 900;
+  }
+}
+
+function JsonShape({ theme }: { theme: Theme }) {
+  const { ink, muted } = theme;
   return (
-    <div
-      className="text-[11.5px] uppercase tracking-[0.14em]"
-      style={{ color: "currentColor", opacity: 0.5 }}
-    >
-      {children}
-    </div>
+    <section>
+      <h2
+        className="m-0 text-[22px] font-medium leading-[1.3] tracking-[-0.01em] sm:text-[26px]"
+        style={{ color: ink }}
+      >
+        One envelope for every chart.
+      </h2>
+      <p
+        className="mt-3 max-w-[620px] text-[15px] leading-[1.62]"
+        style={{ color: muted }}
+      >
+        Put the chart&rsquo;s own data under <code style={{ color: ink }}>data</code>.
+        Optional <code style={{ color: ink }}>theme</code>,{" "}
+        <code style={{ color: ink }}>layout</code>, and{" "}
+        <code style={{ color: ink }}>style</code> blocks let you tune
+        everything from canvas size to per-slot colors without touching any
+        chart code.
+      </p>
+      <CodeBlock
+        theme={theme}
+        label="JSON"
+        code={`{
+  "theme": "ink",
+  "layout": {
+    "width": 1800,
+    "fontScale": 1.05,
+    "xAxisCaption": "per-query latency (ms, log scale)",
+    "hideCorner": true
+  },
+  "style": {
+    "accent": "#1f6feb"
+  },
+  "data": [
+    { "group": "baseline", "bars": [
+      { "level": "p50", "ms": 8.12 },
+      { "level": "p95", "ms": 17.30 },
+      { "level": "p99", "ms": 25.41 }
+    ]},
+    { "group": "rebuilt", "color": "accent", "bars": [
+      { "level": "p50", "ms": 0.064 },
+      { "level": "p95", "ms": 0.302 },
+      { "level": "p99", "ms": 0.470 }
+    ]}
+  ]
+}`}
+      />
+    </section>
   );
 }
 
-function Divider({ RULE }: { RULE: string }) {
-  return <hr className="mt-20 border-0 sm:mt-28" style={{ height: 1, background: RULE }} />;
-}
-
-function Footer({ INK, MUTED, RULE }: { INK: string; MUTED: string; RULE: string }) {
+function Footer({ theme }: { theme: Theme }) {
+  const { ink, muted } = theme;
   return (
-    <footer className="pt-20 sm:pt-24">
-      <div
-        className="flex flex-col items-start justify-between gap-6 pt-6 sm:flex-row sm:items-center"
-        style={{ borderTop: `1px solid ${RULE}` }}
-      >
-        <div className="text-[13px]" style={{ color: MUTED }}>
-          built by{" "}
-          <a
-            href="https://github.com/shuakami"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: INK, textDecoration: "underline", textUnderlineOffset: 3 }}
-          >
-            shuakami
-          </a>{" "}
-          · MIT
-        </div>
-        <div className="flex items-center gap-4 text-[13px]">
-          <a
-            href="https://github.com/shuakami/paperchart"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: INK, textDecoration: "none" }}
-          >
-            github
-          </a>
-          <a
-            href="https://github.com/shuakami/paperchart#json-schemas"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: INK, textDecoration: "none" }}
-          >
-            schemas
-          </a>
-          <a
-            href="https://github.com/shuakami/paperchart/tree/main/skills"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: INK, textDecoration: "none" }}
-          >
-            skills
-          </a>
-        </div>
-      </div>
+    <footer
+      className="flex flex-col gap-1 pb-4 text-[13px] sm:flex-row sm:items-center sm:justify-between"
+      style={{ color: muted }}
+    >
+      <span style={{ color: ink }}>paperchart</span>
+      <span>
+        <a
+          href="https://github.com/shuakami/paperchart"
+          style={{ color: muted, textDecoration: "none" }}
+        >
+          shuakami/paperchart
+        </a>
+        <span className="mx-2">·</span>
+        MIT
+      </span>
     </footer>
   );
 }

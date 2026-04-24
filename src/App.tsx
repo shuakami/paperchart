@@ -14,6 +14,11 @@ import CdfChart from "./charts/CdfChart";
 import DumbbellChart from "./charts/DumbbellChart";
 import RankingChart from "./charts/RankingChart";
 import WaterfallChart from "./charts/WaterfallChart";
+import TableChart from "./charts/TableChart";
+import StackedBarChart from "./charts/StackedBarChart";
+import GroupedBarChart from "./charts/GroupedBarChart";
+import SlopeChart from "./charts/SlopeChart";
+import SmallMultiplesChart from "./charts/SmallMultiplesChart";
 import Landing from "./Landing";
 import { resolveTheme, type Theme } from "./theme";
 
@@ -35,6 +40,11 @@ const routes: Record<string, Comp> = {
   dumbbell: DumbbellChart,
   ranking: RankingChart,
   waterfall: WaterfallChart,
+  table: TableChart,
+  "stacked-bar": StackedBarChart,
+  "grouped-bar": GroupedBarChart,
+  slope: SlopeChart,
+  "small-multiples": SmallMultiplesChart,
 };
 
 function readQuery(): {
