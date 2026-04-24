@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveTheme, type Theme } from "./theme";
 import LatencyChart from "./charts/LatencyChart";
 import BytesChart from "./charts/BytesChart";
@@ -186,36 +186,264 @@ function Hero({ theme }: { theme: Theme }) {
         className="mt-6 max-w-[600px] text-[16px] leading-[1.6] sm:text-[18px] sm:leading-[1.55]"
         style={{ color: muted }}
       >
-        Twenty primitives, six themes, one command. Feed structured JSON, get
-        back a PNG at two-times device pixel ratio. Good defaults, every knob
-        overridable, nothing flashy.
+        Twenty-seven primitives, six themes, one command. Feed structured JSON,
+        get back a PNG at two-times device pixel ratio. Good defaults, every
+        knob overridable, nothing flashy.
       </p>
       <div className="mt-10">
-        <FeaturedChart theme={theme} />
-        <p
-          className="mt-4 text-[13.5px] leading-[1.55]"
-          style={{ color: muted }}
-        >
-          A table in the current theme. Column groups on top, right-aligned
-          numerics, a quiet accent rail on the row you want the reader to land
-          on. Change the theme above to see every primitive follow.
-        </p>
+        <HeroSlideshow theme={theme} />
       </div>
     </header>
   );
 }
 
-function FeaturedChart({ theme }: { theme: Theme }) {
+type HeroSlide = {
+  slug: string;
+  caption: string;
+  aspect: number;
+  render: (theme: Theme) => React.ReactElement;
+};
+
+const HERO_SLIDES: HeroSlide[] = [
+  {
+    slug: "table",
+    caption: "A comparison table. Column groups on top, one focal column tinted.",
+    aspect: 1600 / 720,
+    render: (t) => <TableChart theme={t} />,
+  },
+  {
+    slug: "latency",
+    caption: "Latency distribution. Grouped horizontal bars on a log-scaled axis.",
+    aspect: 1600 / 900,
+    render: (t) => <LatencyChart theme={t} />,
+  },
+  {
+    slug: "sankey",
+    caption: "Flow between sources and targets. Ribbon thickness equals value.",
+    aspect: 1600 / 900,
+    render: (t) => <SankeyChart theme={t} />,
+  },
+  {
+    slug: "treemap",
+    caption: "Hierarchical proportions. Squarified tiles preserve aspect ratio.",
+    aspect: 1600 / 900,
+    render: (t) => <TreemapChart theme={t} />,
+  },
+  {
+    slug: "calendar-heatmap",
+    caption: "A year of daily counts on a seven-by-fifty-three grid.",
+    aspect: 1600 / 380,
+    render: (t) => <CalendarHeatmapChart theme={t} />,
+  },
+  {
+    slug: "radar",
+    caption: "Capability profile across axes that share a zero-to-max scale.",
+    aspect: 1600 / 900,
+    render: (t) => <RadarChart theme={t} />,
+  },
+  {
+    slug: "critical-path",
+    caption: "Network waterfall with blocking, deferred, and milestone markers.",
+    aspect: 1600 / 780,
+    render: (t) => <CriticalPathChart theme={t} />,
+  },
+  {
+    slug: "delivery",
+    caption: "Three-panel architecture comparison, only one variant emphasized.",
+    aspect: 1600 / 900,
+    render: (t) => <Delivery theme={t} />,
+  },
+];
+
+const HERO_DURATION_MS = 5200;
+const HERO_TRANSITION_MS = 620;
+
+function HeroSlideshow({ theme }: { theme: Theme }) {
+  const { ink, muted, rule, bg } = theme;
+
+  const [active, setActive] = useState(0);
+  const [prev, setPrev] = useState<number | null>(null);
+  const [paused, setPaused] = useState(false);
+  const [cycle, setCycle] = useState(0);
+  const exitTimer = useRef<number | null>(null);
+
+  const go = useCallback(
+    (next: number) => {
+      setActive((current) => {
+        const n = ((next % HERO_SLIDES.length) + HERO_SLIDES.length) % HERO_SLIDES.length;
+        if (n === current) return current;
+        setPrev(current);
+        setCycle((c) => c + 1);
+        if (exitTimer.current) window.clearTimeout(exitTimer.current);
+        exitTimer.current = window.setTimeout(() => {
+          setPrev(null);
+          exitTimer.current = null;
+        }, HERO_TRANSITION_MS);
+        return n;
+      });
+    },
+    []
+  );
+
+  // Auto-advance. Reset on pause / manual nav via `cycle`.
+  useEffect(() => {
+    if (paused) return;
+    const id = window.setTimeout(() => go(active + 1), HERO_DURATION_MS);
+    return () => window.clearTimeout(id);
+  }, [active, paused, cycle, go]);
+
+  // Keyboard nav. Only when no input / textarea is focused.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (document.activeElement as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "ArrowRight") go(active + 1);
+      if (e.key === "ArrowLeft") go(active - 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active, go]);
+
+  useEffect(
+    () => () => {
+      if (exitTimer.current) window.clearTimeout(exitTimer.current);
+    },
+    []
+  );
+
+  const activeSlide = HERO_SLIDES[active];
+
+  return (
+    <div>
+      <div
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        style={{
+          position: "relative",
+          background: bg,
+          border: `1px solid ${rule}`,
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            aspectRatio: String(activeSlide.aspect),
+            overflow: "hidden",
+            transition:
+              "aspect-ratio 620ms cubic-bezier(0.22,1,0.36,1)",
+          }}
+        >
+          {prev !== null && (
+            <div
+              key={`out-${prev}-${cycle}`}
+              className="paperchart-slide paperchart-slide--exit"
+            >
+              <HeroSlideInner slide={HERO_SLIDES[prev]} theme={theme} />
+            </div>
+          )}
+          <div
+            key={`in-${active}-${cycle}`}
+            className="paperchart-slide paperchart-slide--enter"
+          >
+            <HeroSlideInner slide={activeSlide} theme={theme} />
+          </div>
+        </div>
+
+        {/* progress bar */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 2,
+            background: "transparent",
+          }}
+        >
+          <div
+            key={`progress-${active}-${cycle}`}
+            className="paperchart-progress-fill"
+            data-paused={paused ? "true" : "false"}
+            style={{
+              height: "100%",
+              width: "100%",
+              background: ink,
+              opacity: 0.35,
+              animationDuration: `${HERO_DURATION_MS}ms`,
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-4">
+        <p
+          key={`caption-${active}`}
+          className="paperchart-slide paperchart-slide--enter m-0 text-[13.5px] leading-[1.55]"
+          style={{
+            color: muted,
+            position: "relative",
+            animationDuration: "420ms",
+            flex: "1 1 auto",
+          }}
+        >
+          {activeSlide.caption}
+        </p>
+        <div className="flex items-center gap-2" aria-label="slide indicators">
+          {HERO_SLIDES.map((s, i) => {
+            const on = i === active;
+            return (
+              <button
+                key={s.slug}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={`go to slide ${i + 1}: ${s.slug}`}
+                aria-current={on ? "true" : "false"}
+                style={{
+                  width: on ? 18 : 6,
+                  height: 6,
+                  padding: 0,
+                  border: 0,
+                  borderRadius: 999,
+                  background: on ? ink : rule,
+                  opacity: on ? 0.85 : 1,
+                  cursor: "pointer",
+                  transition:
+                    "width 420ms cubic-bezier(0.22,1,0.36,1), background 220ms ease",
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeroSlideInner({
+  slide,
+  theme,
+}: {
+  slide: HeroSlide;
+  theme: Theme;
+}) {
+  // Center the chart vertically inside the slideshow frame so shorter slides
+  // (e.g. calendar-heatmap) don't sit glued to the top.
   return (
     <div
       style={{
-        background: theme.bg,
-        border: `1px solid ${theme.rule}`,
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <FitSvg aspect={1600 / 720}>
-        <TableChart theme={theme} />
-      </FitSvg>
+      <div style={{ width: "100%" }}>
+        <FitSvg aspect={slide.aspect}>{slide.render(theme)}</FitSvg>
+      </div>
     </div>
   );
 }
@@ -390,7 +618,7 @@ function Gallery({ theme }: { theme: Theme }) {
         className="m-0 text-[22px] font-medium leading-[1.3] tracking-[-0.01em] sm:text-[26px]"
         style={{ color: ink }}
       >
-        Twenty primitives.
+        Twenty-seven primitives.
       </h2>
       <p
         className="mt-3 max-w-[620px] text-[15px] leading-[1.62]"
