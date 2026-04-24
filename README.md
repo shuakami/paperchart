@@ -12,7 +12,7 @@ Or install as an open agent skill so Claude Code, Cursor, Codex and Gemini can p
 npx skills add shuakami/paperchart
 ```
 
-Twenty-seven chart primitives, six themes, a headless-Chromium pipeline that renders every figure at 2&times;-DPR. Designed to be driven by AI agents &mdash; feed it a structured JSON file, get a figure you can ship.
+Thirty-two chart primitives (including Mermaid-style flowchart, architecture, sequence, state, and ER diagrams), six themes, a headless-Chromium pipeline that renders every figure at 2&times;-DPR. Designed to be driven by AI agents &mdash; feed it a structured JSON file, get a figure you can ship.
 
 ---
 
@@ -63,6 +63,11 @@ The CLI starts a tiny local HTTP server, renders the React view inside headless 
 | `pack-layout` | byte-level composition + bit header | explaining a binary format on a single page |
 | `recall` | per-row dot plot with overlapping markers | showing that two or more engines return the same result set |
 | `delivery` | three-up panel comparison | architecture options where only one variant is emphasised |
+| `flowchart` | layered DAG with decisions and stores | request pipelines, retrieval flows, retry logic |
+| `architecture` | grouped services with labelled connections | system architecture diagrams |
+| `sequence` | lifelines with directed messages and notes | API request flows, RPC traces |
+| `state-diagram` | states with labelled transitions and pseudostates | UI and protocol state machines |
+| `er-diagram` | entity boxes with crow's-foot cardinality | database schema walkthroughs |
 
 Hit each live at [shuakami.github.io/paperchart](https://shuakami.github.io/paperchart/).
 

@@ -44,6 +44,11 @@ const routes = [
   { slug: "radar", file: "radar.png" },
   { slug: "box-plot", file: "box-plot.png" },
   { slug: "calendar-heatmap", file: "calendar-heatmap.png" },
+  { slug: "flowchart", file: "flowchart.png" },
+  { slug: "sequence", file: "sequence.png" },
+  { slug: "architecture", file: "architecture.png" },
+  { slug: "state-diagram", file: "state-diagram.png" },
+  { slug: "er-diagram", file: "er-diagram.png" },
 ];
 
 const browser = await chromium.launch({ headless: true });

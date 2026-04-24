@@ -1,6 +1,6 @@
 ---
 name: paperchart
-description: Generate clean, calm chart PNGs in the spirit of Anthropic and OpenAI blog posts. Trigger when the user asks to produce a chart, model comparison table, diagram or infographic for a technical blog post, release notes, a research write-up or a slide deck and wants a single restrained palette, minimal chrome, heavy inline labelling, and PNG output rendered from React at native resolution. The primary surface is a shell CLI named `paperchart` that takes a JSON file and writes a PNG. Twenty-seven primitives (line, area, scatter, heatmap, calendar heatmap, histogram, cdf, box-plot, ranking, dumbbell, slope, waterfall, line, area, small-multiples, timeline, funnel, sankey, treemap, radar, table, stacked-bar, grouped-bar, critical-path, pack-layout, latency, bytes, recall, delivery), six themes, layout + style overrides per chart.
+description: Generate clean, calm chart PNGs in the spirit of Anthropic and OpenAI blog posts. Trigger when the user asks to produce a chart, model comparison table, diagram or infographic for a technical blog post, release notes, a research write-up or a slide deck and wants a single restrained palette, minimal chrome, heavy inline labelling, and PNG output rendered from React at native resolution. The primary surface is a shell CLI named `paperchart` that takes a JSON file and writes a PNG. Thirty-two primitives covering charts (line, area, scatter, heatmap, calendar heatmap, histogram, cdf, box-plot, ranking, dumbbell, slope, waterfall, small-multiples, timeline, funnel, sankey, treemap, radar, table, stacked-bar, grouped-bar, critical-path, pack-layout, latency, bytes, recall) and Mermaid-style structural diagrams (flowchart, architecture, sequence, state-diagram, er-diagram, delivery). Six themes, layout + style overrides per chart.
 license: MIT
 metadata:
   author: shuakami
@@ -30,7 +30,7 @@ paperchart <type> -i data.json -o out.png [--width 1600] [--dpr 2]
 paperchart <type> --defaults -o out.png      # render the built-in sample
 ```
 
-Types: `table`, `latency`, `bytes`, `stacked-bar`, `grouped-bar`, `funnel`, `ranking`, `dumbbell`, `slope`, `line`, `area`, `small-multiples`, `timeline`, `scatter`, `heatmap`, `calendar-heatmap`, `histogram`, `box-plot`, `cdf`, `radar`, `treemap`, `sankey`, `waterfall`, `critical-path`, `recall`, `pack-layout`, `delivery`.
+Types: `table`, `latency`, `bytes`, `stacked-bar`, `grouped-bar`, `funnel`, `ranking`, `dumbbell`, `slope`, `line`, `area`, `small-multiples`, `timeline`, `scatter`, `heatmap`, `calendar-heatmap`, `histogram`, `box-plot`, `cdf`, `radar`, `treemap`, `sankey`, `waterfall`, `critical-path`, `recall`, `pack-layout`, `delivery`, `flowchart`, `architecture`, `sequence`, `state-diagram`, `er-diagram`.
 
 Themes: `paper` (warm off-white, rust), `ink` (near-white, black), `slate` (cool grey, deep blue), `forest` (off-white, forest green), `mono` (pure monochrome), `dusk` (dark charcoal, warm orange). Pass `--theme <name>` on the CLI or put `"theme": "<name>"` in the JSON envelope.
 
@@ -93,6 +93,11 @@ Short form. Full schemas are in the project README and in the per-type `skills/<
 - `recall` &mdash; `Query[]`. Each query: `{ query, hits, sets: "equal" }`.
 - `pack-layout` &mdash; `Segment[]`. Each segment: `{ label, detail, bytes, accent: boolean }`.
 - `delivery` &mdash; `{ header, subheader, panels: PanelSpec[] }` with up to 3 panels.
+- `flowchart` &mdash; `{ direction?: "TD" | "LR", nodes: [{ id, label, caption?, shape?: "rect" | "round" | "stadium" | "diamond" | "cylinder", accent? }], edges: [{ from, to, label?, dashed?, accent? }] }`. Layered DAG, back-edges detected and drawn as loop-backs.
+- `architecture` &mdash; `{ groups: [{ id, label, caption?, services: [{ id, label, caption?, accent? }] }], connections: [{ from, to, label?, dashed?, accent?, bidirectional? }] }`. Groups stack left-to-right; services stack top-to-bottom inside each group.
+- `sequence` &mdash; `{ actors: [{ id, label, caption? }], steps: [{ kind: "msg", from, to, label?, reply?, async?, accent? } | { kind: "note", over: id | [id, id], text }] }`. Time flows downward.
+- `state-diagram` &mdash; `{ direction?: "TD" | "LR", states: [{ id, label, caption?, start?, end?, accent? }], transitions: [{ from, to, label?, dashed?, accent? }] }`. Start / end pseudostates render as &bull; / &#x29BE;.
+- `er-diagram` &mdash; `{ entities: [{ id, label, caption?, accent?, fields: [{ name, type?, pk?, fk?, note? }] }], relationships: [{ from, to, fromCard, toCard, label?, accent? }] }` where cardinality codes are `"1"`, `"0..1"`, `"M"`, `"1..M"`, `"0..M"`.
 
 ## The palette &mdash; five values only
 

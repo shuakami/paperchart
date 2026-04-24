@@ -44,6 +44,11 @@ const TYPES = [
   "radar",
   "box-plot",
   "calendar-heatmap",
+  "flowchart",
+  "sequence",
+  "architecture",
+  "state-diagram",
+  "er-diagram",
 ];
 
 const THEMES = ["paper", "ink", "slate", "forest", "mono", "dusk"];

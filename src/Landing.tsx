@@ -27,6 +27,11 @@ import TreemapChart from "./charts/TreemapChart";
 import RadarChart from "./charts/RadarChart";
 import BoxPlotChart from "./charts/BoxPlotChart";
 import CalendarHeatmapChart from "./charts/CalendarHeatmapChart";
+import FlowchartChart from "./charts/FlowchartChart";
+import SequenceChart from "./charts/SequenceChart";
+import ArchitectureChart from "./charts/ArchitectureChart";
+import StateDiagramChart from "./charts/StateDiagramChart";
+import ErDiagramChart from "./charts/ErDiagramChart";
 
 const THEME_ORDER = ["paper", "ink", "slate", "forest", "mono", "dusk"] as const;
 type ThemeName = (typeof THEME_ORDER)[number];
@@ -66,6 +71,11 @@ const PRIMITIVES: PrimitiveDef[] = [
   { slug: "recall", name: "recall", tag: "Per-row dot plot for set equality", render: (t) => <RecallChart theme={t} /> },
   { slug: "pack-layout", name: "pack layout", tag: "Byte-level binary anatomy", render: (t) => <PackLayout theme={t} /> },
   { slug: "delivery", name: "delivery", tag: "Three-panel architecture comparison", render: (t) => <Delivery theme={t} /> },
+  { slug: "flowchart", name: "flowchart", tag: "Directed nodes with decisions, terminals, stores", render: (t) => <FlowchartChart theme={t} /> },
+  { slug: "architecture", name: "architecture", tag: "Grouped services connected across layers", render: (t) => <ArchitectureChart theme={t} /> },
+  { slug: "sequence", name: "sequence", tag: "Lifelines, messages, notes, self-calls", render: (t) => <SequenceChart theme={t} /> },
+  { slug: "state-diagram", name: "state diagram", tag: "States with labeled transitions and pseudostates", render: (t) => <StateDiagramChart theme={t} /> },
+  { slug: "er-diagram", name: "ER diagram", tag: "Entities with fields and crow's-foot cardinality", render: (t) => <ErDiagramChart theme={t} /> },
 ];
 
 const INSTALL_CMD = "npx github:shuakami/paperchart <type> -i data.json -o out.png";
@@ -186,7 +196,7 @@ function Hero({ theme }: { theme: Theme }) {
         className="mt-6 max-w-[600px] text-[16px] leading-[1.6] sm:text-[18px] sm:leading-[1.55]"
         style={{ color: muted }}
       >
-        Twenty-seven primitives, six themes, one command. Feed structured JSON,
+        Thirty-two primitives, six themes, one command. Feed structured JSON,
         get back a PNG at two-times device pixel ratio. Good defaults, every
         knob overridable, nothing flashy.
       </p>
@@ -252,6 +262,24 @@ const HERO_SLIDES: HeroSlide[] = [
     caption: "Three-panel architecture comparison, only one variant emphasized.",
     aspect: 1600 / 900,
     render: (t) => <Delivery theme={t} />,
+  },
+  {
+    slug: "flowchart",
+    caption: "Directed flowchart. Layered DAG with decisions, terminals, stores.",
+    aspect: 1600 / 1080,
+    render: (t) => <FlowchartChart theme={t} />,
+  },
+  {
+    slug: "architecture",
+    caption: "System architecture. Grouped services connected across layers.",
+    aspect: 1600 / 900,
+    render: (t) => <ArchitectureChart theme={t} />,
+  },
+  {
+    slug: "sequence",
+    caption: "Sequence diagram. Lifelines with directed messages and notes.",
+    aspect: 1600 / 900,
+    render: (t) => <SequenceChart theme={t} />,
   },
 ];
 
@@ -618,7 +646,7 @@ function Gallery({ theme }: { theme: Theme }) {
         className="m-0 text-[22px] font-medium leading-[1.3] tracking-[-0.01em] sm:text-[26px]"
         style={{ color: ink }}
       >
-        Twenty-seven primitives.
+        Thirty-two primitives.
       </h2>
       <p
         className="mt-3 max-w-[620px] text-[15px] leading-[1.62]"

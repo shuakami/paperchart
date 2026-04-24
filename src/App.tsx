@@ -26,6 +26,11 @@ import TreemapChart from "./charts/TreemapChart";
 import RadarChart from "./charts/RadarChart";
 import BoxPlotChart from "./charts/BoxPlotChart";
 import CalendarHeatmapChart from "./charts/CalendarHeatmapChart";
+import FlowchartChart from "./charts/FlowchartChart";
+import SequenceChart from "./charts/SequenceChart";
+import ArchitectureChart from "./charts/ArchitectureChart";
+import StateDiagramChart from "./charts/StateDiagramChart";
+import ErDiagramChart from "./charts/ErDiagramChart";
 import Landing from "./Landing";
 import { resolveTheme, type Theme } from "./theme";
 
@@ -59,6 +64,11 @@ const routes: Record<string, Comp> = {
   radar: RadarChart,
   "box-plot": BoxPlotChart,
   "calendar-heatmap": CalendarHeatmapChart,
+  flowchart: FlowchartChart,
+  sequence: SequenceChart,
+  architecture: ArchitectureChart,
+  "state-diagram": StateDiagramChart,
+  "er-diagram": ErDiagramChart,
 };
 
 function readQuery(): {
