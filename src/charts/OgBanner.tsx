@@ -103,33 +103,33 @@ export default function OgBanner({
         {/* hero headline */}
         <text
           x="0"
-          y="160"
+          y="150"
           fontFamily="Inter, system-ui, sans-serif"
-          fontSize="84"
+          fontSize="72"
           fontWeight={500}
-          letterSpacing="-0.025em"
+          letterSpacing="-0.028em"
           fill={t.ink}
         >
           Clean charts
         </text>
         <text
           x="0"
-          y="248"
+          y="226"
           fontFamily="Inter, system-ui, sans-serif"
-          fontSize="84"
+          fontSize="72"
           fontWeight={500}
-          letterSpacing="-0.025em"
+          letterSpacing="-0.028em"
           fill={t.ink}
         >
           for technical
         </text>
         <text
           x="0"
-          y="336"
+          y="302"
           fontFamily="Inter, system-ui, sans-serif"
-          fontSize="84"
+          fontSize="72"
           fontWeight={500}
-          letterSpacing="-0.025em"
+          letterSpacing="-0.028em"
           fill={t.ink}
         >
           writing.
@@ -138,7 +138,7 @@ export default function OgBanner({
         {/* sub copy */}
         <text
           x="0"
-          y="400"
+          y="370"
           fontFamily="Inter, system-ui, sans-serif"
           fontSize="22"
           fontWeight={400}
@@ -149,7 +149,7 @@ export default function OgBanner({
         </text>
         <text
           x="0"
-          y="430"
+          y="400"
           fontFamily="Inter, system-ui, sans-serif"
           fontSize="22"
           fontWeight={400}
@@ -160,7 +160,7 @@ export default function OgBanner({
         </text>
 
         {/* command pill */}
-        <g transform="translate(0, 462)">
+        <g transform="translate(0, 442)">
           <rect
             x="0"
             y="0"
@@ -186,18 +186,6 @@ export default function OgBanner({
         </g>
       </g>
 
-      {/* footer — domain on the bottom right */}
-      <text
-        x={W - 80}
-        y={H - 40}
-        textAnchor="end"
-        fontFamily="Inter, system-ui, sans-serif"
-        fontSize="16"
-        fill={t.muted}
-        letterSpacing="0.01em"
-      >
-        shuakami.github.io/paperchart
-      </text>
     </svg>
   );
 }
@@ -484,15 +472,6 @@ function RightCollage({ t }: { t: Theme }) {
         )}
       </g>
 
-      {/* faint hairline rule under the cards */}
-      <line
-        x1={560}
-        y1={570}
-        x2={1120}
-        y2={570}
-        stroke={rule}
-        strokeWidth="1"
-      />
     </g>
   );
 }
