@@ -31,6 +31,7 @@ import SequenceChart from "./charts/SequenceChart";
 import ArchitectureChart from "./charts/ArchitectureChart";
 import StateDiagramChart from "./charts/StateDiagramChart";
 import ErDiagramChart from "./charts/ErDiagramChart";
+import OgBanner from "./charts/OgBanner";
 import Landing from "./Landing";
 import { resolveTheme, type Theme } from "./theme";
 
@@ -69,6 +70,7 @@ const routes: Record<string, Comp> = {
   architecture: ArchitectureChart,
   "state-diagram": StateDiagramChart,
   "er-diagram": ErDiagramChart,
+  og: OgBanner,
 };
 
 function readQuery(): {

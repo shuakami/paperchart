@@ -22,6 +22,7 @@ dist-ssr
 # Local snapshot helpers
 debug-snap.mjs
 landing-snap.mjs
+og-snap.mjs
 *.local
 
 # Rendered chart outputs

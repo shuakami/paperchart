@@ -1,5 +1,7 @@
 # paperchart
 
+![paperchart — clean charts for technical writing](./public/og.png)
+
 Clean chart PNGs for technical blog posts. One command in, one image out.
 
 ```bash
@@ -13,6 +15,71 @@ npx skills add shuakami/paperchart
 ```
 
 Thirty-two chart primitives (including Mermaid-style flowchart, architecture, sequence, state, and ER diagrams), six themes, a headless-Chromium pipeline that renders every figure at 2&times;-DPR. Designed to be driven by AI agents &mdash; feed it a structured JSON file, get a figure you can ship.
+
+---
+
+## Gallery
+
+A quick look at every primitive. Each one is rendered live on the [landing page](https://shuakami.github.io/paperchart/) and can be re-rendered into a PNG with the CLI.
+
+### Tables and rankings
+
+| | |
+| --- | --- |
+| ![table](./docs/screenshots/table.png) | ![ranking](./docs/screenshots/ranking.png) |
+| **`table`** &mdash; column-major comparison table for model / product / tier release posts. | **`ranking`** &mdash; sorted leaderboard with one accented row, for eval rankings and top-N lists. |
+
+### Bars and distributions
+
+| | |
+| --- | --- |
+| ![latency](./docs/screenshots/latency.png) | ![bytes](./docs/screenshots/bytes.png) |
+| **`latency`** &mdash; grouped horizontal bars, log-scaled x axis, for percentile comparisons. | **`bytes`** &mdash; stacked horizontal bars with an explicit gap, for first-load vs deferred payloads. |
+| ![stacked-bar](./docs/screenshots/stacked-bar.png) | ![grouped-bar](./docs/screenshots/grouped-bar.png) |
+| **`stacked-bar`** &mdash; per-row segment stack, for composition of a measure across categories. | **`grouped-bar`** &mdash; side-by-side bars per group, for two to four series compared across groups. |
+| ![dumbbell](./docs/screenshots/dumbbell.png) | ![slope](./docs/screenshots/slope.png) |
+| **`dumbbell`** &mdash; paired before / after endpoints per row, bi-temporal comparisons at a fixed moment. | **`slope`** &mdash; two-point lines per series, simple before / after trend. |
+| ![histogram](./docs/screenshots/histogram.png) | ![box-plot](./docs/screenshots/box-plot.png) |
+| **`histogram`** &mdash; frequency bins, for distribution shape. | **`box-plot`** &mdash; five-number-summary rows, for distribution comparison. |
+| ![cdf](./docs/screenshots/cdf.png) | ![waterfall](./docs/screenshots/waterfall.png) |
+| **`cdf`** &mdash; cumulative distribution, for tail-sensitive comparisons. | **`waterfall`** &mdash; signed-delta steps, for build-ups and break-downs. |
+
+### Time, flow, and structure
+
+| | |
+| --- | --- |
+| ![line](./docs/screenshots/line.png) | ![area](./docs/screenshots/area.png) |
+| **`line`** &mdash; multi-series time series, the classical line chart. | **`area`** &mdash; stacked area, for composition over time. |
+| ![small-multiples](./docs/screenshots/small-multiples.png) | ![timeline](./docs/screenshots/timeline.png) |
+| **`small-multiples`** &mdash; N panels sharing axes, per-segment sparkline grid. | **`timeline`** &mdash; swim-lane phases on a time axis, for roadmaps and release histories. |
+| ![funnel](./docs/screenshots/funnel.png) | ![sankey](./docs/screenshots/sankey.png) |
+| **`funnel`** &mdash; stage bars with drop-off annotations, for acquisition / activation funnels. | **`sankey`** &mdash; two-column flow diagram, for attribution and token allocation. |
+| ![treemap](./docs/screenshots/treemap.png) | ![radar](./docs/screenshots/radar.png) |
+| **`treemap`** &mdash; squarified hierarchical tiles, for bundle / budget composition. | **`radar`** &mdash; multi-axis polygon, for capability profile and coverage map. |
+
+### Matrices, points, calendars
+
+| | |
+| --- | --- |
+| ![scatter](./docs/screenshots/scatter.png) | ![heatmap](./docs/screenshots/heatmap.png) |
+| **`scatter`** &mdash; points + optional regression, for correlation plots. | **`heatmap`** &mdash; row &times; column matrix, for confusion matrices and cross-tabs. |
+| ![calendar-heatmap](./docs/screenshots/calendar-heatmap.png) | ![recall](./docs/screenshots/recall.png) |
+| **`calendar-heatmap`** &mdash; 53&times;7 daily grid, daily activity over a year. | **`recall`** &mdash; per-row dot plot with overlapping markers, showing two engines return the same set. |
+
+### Architecture and explanation
+
+| | |
+| --- | --- |
+| ![critical-path](./docs/screenshots/critical-path.png) | ![pack-layout](./docs/screenshots/pack-layout.png) |
+| **`critical-path`** &mdash; horizontal timeline with named milestones, for resource waterfalls. | **`pack-layout`** &mdash; byte-level composition + bit header, for explaining a binary format. |
+| ![delivery](./docs/screenshots/delivery.png) | ![flowchart](./docs/screenshots/flowchart.png) |
+| **`delivery`** &mdash; three-up panel comparison, for architecture options where one variant is emphasised. | **`flowchart`** &mdash; layered DAG with decisions and stores, for request pipelines and retry logic. |
+| ![architecture](./docs/screenshots/architecture.png) | ![sequence](./docs/screenshots/sequence.png) |
+| **`architecture`** &mdash; grouped services with labelled connections, for system architecture diagrams. | **`sequence`** &mdash; lifelines with directed messages and notes, for API request flows. |
+| ![state-diagram](./docs/screenshots/state-diagram.png) | ![er-diagram](./docs/screenshots/er-diagram.png) |
+| **`state-diagram`** &mdash; states with labelled transitions and pseudostates, for UI state machines. | **`er-diagram`** &mdash; entity boxes with crow's-foot cardinality, for database schema walkthroughs. |
+
+All thirty-two are also live at [shuakami.github.io/paperchart](https://shuakami.github.io/paperchart/). Pass `?theme=ink` (or `slate` / `forest` / `mono` / `dusk`) to see any of them in another palette.
 
 ---
 
@@ -69,7 +136,7 @@ The CLI starts a tiny local HTTP server, renders the React view inside headless 
 | `state-diagram` | states with labelled transitions and pseudostates | UI and protocol state machines |
 | `er-diagram` | entity boxes with crow's-foot cardinality | database schema walkthroughs |
 
-Hit each live at [shuakami.github.io/paperchart](https://shuakami.github.io/paperchart/).
+Hit each live at [shuakami.github.io/paperchart](https://shuakami.github.io/paperchart/) &mdash; or scroll up to the gallery above for a pre-rendered preview of every primitive.
 
 ## JSON schemas
 
@@ -185,17 +252,20 @@ paperchart <type> -i data.json -o out.png [options]
       --help            Print usage.
 ```
 
-## Palette
+## Themes
 
-| hex | role |
-| --- | --- |
-| `#F6F1EA` | page background |
-| `#C75F3C` | accent (exactly one element per chart) |
-| `#D6B99B` | secondary neutral |
-| `#2B2A27` | ink |
-| `#E6DCCE` | rules / hairlines |
+Every chart reads a five-token theme &mdash; `bg`, `ink`, `muted`, `accent`, `secondary`, `rule`. No hex is hard-coded inside chart code; the same JSON renders into any theme by passing `--theme <name>`.
 
-No gradients, no shadows, no rounded corners. Inline labels beat titles.
+| name | feel | accent |
+| --- | --- | --- |
+| `paper` | warm off-white, the default | rust `#C75F3C` |
+| `ink` | near-white, OpenAI research | graphite `#111111` |
+| `slate` | cool neutral, Stripe Press | deep blue `#3B5BDB` |
+| `forest` | warm off-white, foliage accent | green `#2F6B48` |
+| `mono` | pure monochrome | black `#000000` |
+| `dusk` | charcoal background, warm orange | amber `#E58A4A` |
+
+No gradients, no shadows, no decorative rounded corners. Inline labels beat titles.
 
 ## Deeper customisation
 
