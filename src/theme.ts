@@ -15,6 +15,12 @@ export type Theme = {
   accentSoft?: string;
   secondarySoft?: string;
   panel?: string;
+  // ordered palette for charts that compare 3+ series side by side (grouped
+  // bars, multi-line, ranking). Index 0 is always the highlight slot, the
+  // rest must read as distinct categorical colors at small bar size. Themes
+  // that omit this fall back to [accent, secondary, secondarySoft] which
+  // cycles for >3 series — visually broken on grouped bars.
+  palette?: string[];
 };
 
 export const THEMES: Record<string, Theme> = {
@@ -30,6 +36,7 @@ export const THEMES: Record<string, Theme> = {
     accentSoft: "#E89A80",
     secondarySoft: "#E8D5BA",
     panel: "#FBF7F0",
+    palette: ["#C75F3C", "#5B574E", "#A07A4F", "#8E9B8C", "#D6B99B"],
   },
   // near-white, black ink, graphite accent — the OpenAI research post look
   ink: {
@@ -43,6 +50,7 @@ export const THEMES: Record<string, Theme> = {
     accentSoft: "#4A4A4A",
     secondarySoft: "#D4D4D1",
     panel: "#FFFFFF",
+    palette: ["#111111", "#5C5C5C", "#8A8A8A", "#B0B0B0", "#D0D0CD"],
   },
   // cool neutral, deep blue accent — Stripe Press / research paper
   slate: {
@@ -56,6 +64,7 @@ export const THEMES: Record<string, Theme> = {
     accentSoft: "#8AA0EC",
     secondarySoft: "#C4CCD9",
     panel: "#FFFFFF",
+    palette: ["#3B5BDB", "#1B2230", "#56627A", "#9AA7BC", "#C4CCD9"],
   },
   // warm off-white, forest green accent
   forest: {
@@ -69,6 +78,7 @@ export const THEMES: Record<string, Theme> = {
     accentSoft: "#83A794",
     secondarySoft: "#D4D4C2",
     panel: "#FAF8F0",
+    palette: ["#2F6B48", "#1E2A22", "#836A4A", "#7E8A7C", "#B8BEA6"],
   },
   // pure monochrome, no accent color
   mono: {
@@ -82,6 +92,7 @@ export const THEMES: Record<string, Theme> = {
     accentSoft: "#454545",
     secondarySoft: "#D8D8D8",
     panel: "#FAFAFA",
+    palette: ["#000000", "#525252", "#858585", "#ABABAB", "#CCCCCC"],
   },
   // dark mode — charcoal background, warm orange accent
   dusk: {
@@ -95,6 +106,7 @@ export const THEMES: Record<string, Theme> = {
     accentSoft: "#B96F3B",
     secondarySoft: "#4A4540",
     panel: "#1C1A17",
+    palette: ["#E58A4A", "#F2E9DA", "#9C9385", "#6B6357", "#3F3A33"],
   },
 };
 

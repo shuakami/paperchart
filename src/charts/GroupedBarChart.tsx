@@ -88,7 +88,12 @@ export default function GroupedBarChart({
   const series = d.series ?? [];
   const groups = d.groups ?? [];
 
-  const palette = [ACCENT, NEUTRAL, SOFT];
+  // Prefer the theme's ordered N-color palette so 4+ series stay distinct.
+  // Fall back to the legacy [accent, secondary, secondarySoft] triple, which
+  // cycles for any fourth series — that's the "pairs of identical bars" bug.
+  const palette = th.palette && th.palette.length >= 3
+    ? th.palette
+    : [ACCENT, NEUTRAL, SOFT];
 
   const fs = num(L.fontScale, 1);
   const LEFT = num(L.padding?.left, 88);

@@ -459,11 +459,11 @@ function FlowchartCore({ theme, input, layout, style }: {
 
   return (
     <svg
+      width={W}
+      height={H}
       viewBox={`0 0 ${W} ${H}`}
-      width="100%"
-      height="100%"
       preserveAspectRatio="xMidYMid meet"
-      style={{ background: bg }}
+      style={{ display: "block", background: bg }}
     >
       <defs>
         <marker

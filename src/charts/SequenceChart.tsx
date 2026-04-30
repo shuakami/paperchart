@@ -123,11 +123,11 @@ function SequenceCore({
 
   return (
     <svg
+      width={W}
+      height={H}
       viewBox={`0 0 ${W} ${H}`}
-      width="100%"
-      height="100%"
       preserveAspectRatio="xMidYMid meet"
-      style={{ background: bg }}
+      style={{ display: "block", background: bg }}
     >
       <defs>
         <marker id={arrowId} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
